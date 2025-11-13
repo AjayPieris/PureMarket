@@ -1,0 +1,39 @@
+# =============================
+# 🌐 FRONTEND (React / Vite)
+# =============================
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.vite/
+
+# Uploads or temporary files
+uploads/
+public/uploads/
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

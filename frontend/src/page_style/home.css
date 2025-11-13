@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:wght@400;600;700;800&display=swap');
+
+header{ font-family: "Outfit", sans-serif; }
+
+/* ====== PAGE BASE ====== */
+.home-page {
+  min-height: 100dvh;
+  background: #ffffff;
+  color: #111827;
+  font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+
+/* ====== HERO ====== */
+.hero {
+  max-width: 980px;
+  margin: 56px auto 24px;
+  padding: 0 20px;
+  text-align: center;
+}
+.hero-title {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: clamp(32px, 5.6vw, 64px);
+  line-height: 1.08;
+}
+.accent {
+  background: linear-gradient(90deg, #7C3AED, #9F7AEA);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-sub {
+  margin: 16px auto 0;
+  max-width: 760px;
+  color: #6b7280;
+  font-size: clamp(15px, 2.2vw, 18px);
+}
+.hero-ctas {
+  margin-top: 24px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ====== BUTTONS ====== */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 18px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  background: linear-gradient(90deg, #7C3AED, #6D28D9);
+  box-shadow: 0 10px 22px rgba(80,46,229,.16);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(80,46,229,.26); }
+
+.link-plain {
+  color: #111827; text-decoration: none; font-weight: 600; opacity: .9;
+  transition: opacity .2s ease, color .2s ease;
+}
+.link-plain:hover { color: #3b82f6; opacity: 1; }
+
+/* ====== STAT BOXES (Centered + Bigger Numbers) ====== */
+.stats {
+  width: 100%;
+  max-width: 1100px;
+  margin: 20px auto 56px;
+  padding: 0 18px;
+
+  /* Center the grid and keep cards small; wrap to 2/1 cols on smaller screens */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 260px));
+  justify-content: center;     /* center the tracks */
+  gap: 16px;
+}
+
+.stat-card.small.center{
+  --ring:#ede9fe;
+  background: #fff;
+  border: 1px solid #eaeef3;
+  border-radius: 16px;
+  padding: 18px 14px;
+  min-height: 130px;
+
+  /* Center content inside each card */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  box-shadow: 0 1px 0 rgba(17,24,39,.02), 0 10px 22px rgba(2,6,23,.06);
+}
+.stat-card.small.center:hover{
+  transform: translateY(-4px);
+  border-color:#e1d8ff;
+  box-shadow: 0 12px 24px rgba(124,58,237,.14);
+}
+.stat-card.small.center::after{
+  content:""; position:absolute; inset:-1px; border-radius:16px; pointer-events:none;
+}
+
+.stat-icon{
+  height: 38px; width: 38px;
+  display:grid; place-items:center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f3e8ff, #eef2ff);
+  color:#7C3AED;
+  margin-bottom: 6px;
+}
+
+/* Bigger font for the numbers (including 1,000+) */
+.stat-value{
+  font-size: clamp(18px, 3.6vw, 30px);
+  font-weight: 900;
+  color:#7C3AED;
+  line-height:1.1;
+}
+.stat-label{
+  margin-top: 4px;
+  color:#000;
+  font-size: 14px;
+  line-height:1.2;
+  font-weight: 500;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 900px){
+  .hero-title{ font-size: clamp(28px, 8vw, 48px); }
+  .hero-sub{ font-size: clamp(14px, 3vw, 16px); }
+  .stats{ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+}
+
+@media (max-width: 600px){
+  .hero { margin: 40px auto 18px; }
+  .hero-ctas { gap: 12px; }
+  .btn-primary { height: 42px; padding: 0 16px; }
+
+  .stats{ grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .stat-card.small.center{ min-height: 120px; padding: 16px 12px; }
+  .stat-icon{ width: 34px; height: 34px; }
+  .stat-label{ font-size: 13px; }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce){
+  .btn-primary, .stat-card.small.center{ transition: none; }
+}
