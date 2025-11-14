@@ -1,5 +1,9 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "../page_style/register.css";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -8,15 +12,45 @@ export default function Register() {
     role: "Customer",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log("Register form submitted:", form);
+    setMsg("");
+    setLoading(true);
+    try {
+      // Map "Customer" -> "customer", "Vendor" -> "vendor"
+      const payload = {
+        ...form,
+        role: String(form.role).toLowerCase(),
+      };
+
+      const { data } = await axios.post(`${API_BASE}/api/auth/register`, payload);
+      setMsg(data.message || "Registered successfully");
+      const successMessage = data.message || "Registration successful! Please sign in.";
+       navigate("/signin", {
+        state: {
+          fromRegister: true,
+          message: successMessage,
+        },
+        replace: true, // optional: replace history so back doesn’t re-show register
+      });
+
+
+    } catch (err) {
+      const message =
+        err.response?.data?.message || err.message || "Registration failed";
+      setMsg(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -112,7 +146,11 @@ export default function Register() {
           />
         </div>
 
-        <button type="submit" className="reg-btn">Create Account</button>
+        <button type="submit" className="reg-btn" disabled={loading}>
+          {loading ? "Creating..." : "Create Account"}
+        </button>
+
+        {msg && <p className="reg-message" role="alert">{msg}</p>}
 
         <p className="reg-muted">
           Already have an account? <a className="reg-link" href="/signin">Sign in</a>

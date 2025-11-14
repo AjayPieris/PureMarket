@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import "../components_style/productCard.css";
 import { useCart } from "../context/CartContext";
+import axios from "axios";
 
 const sampleProducts = [
   { id: "1", name: "Premium Wireless Headphones", price: 299.99, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500", category: "Electronics", rating: 4.5, vendor: "TechVendor", stock: 15, description: "High-quality wireless headphones with noise cancellation." },
@@ -10,6 +11,8 @@ const sampleProducts = [
   { id: "5", name: "Coffee Maker Deluxe", price: 159.99, image: "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=500", category: "Home", rating: 4.7, vendor: "HomeEssentials", stock: 12, description: "Professional-grade coffee maker for home use." },
   { id: "6", name: "Vintage Camera", price: 599.99, image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500", category: "Electronics", rating: 4.9, vendor: "PhotoPro", stock: 5, description: "Classic vintage camera with modern features." },
 ];
+
+
 
 export default function ProductCardList({ searchQuery = "", category = "", sort = "name" }) {
   const [favorites, setFavorites] = useState([]);

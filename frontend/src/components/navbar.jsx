@@ -1,31 +1,43 @@
 import React from "react";
 import "../components_style/navbar.css";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
   const location = useLocation();
-  const { cartCount } = useCart() || { cartCount: 0 };
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+
+  // If CartProvider is guaranteed present (preferred), this will not throw.
+  // If you sometimes render Navbar outside provider (not recommended), you can wrap in try/catch.
+  let cartCount = 0;
+  try {
+    const cart = useCart();
+    cartCount = cart.cartCount;
+  } catch {
+    // Fallback if not inside CartProvider (temporary safety)
+    cartCount = 0;
+  }
 
   const pathname = location.pathname || "/";
-
-  // Route guards
   const isVendorPage = /^\/vendor(\/|$)/.test(pathname);
   const isAdminPage = /^\/admin(\/|$)/.test(pathname);
 
-  // Show/hide controls
-  // - Hide cart on vendor AND admin pages, and also when already at /cart
   const showCartLink = !isVendorPage && !isAdminPage && pathname !== "/cart";
-
-  // - Hide Products link on admin pages (as requested). Keep it visible elsewhere (home, vendor, etc.)
   const showProductsLink = !isAdminPage;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/signin", { replace: true });
+  };
 
   return (
     <header className="home-nav">
       <div className="nav-inner">
         <Link to="/" className="brand">
-          <span className="logo-pill" aria-hidden>
+          <span className="logo-pill" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M12 2l7 4v8l-7 4-7-4V6l7-4z" stroke="white" strokeWidth="1.6" />
               <path d="M12 2v8l7 4M12 10L5 14" stroke="white" strokeWidth="1.2" opacity=".7" />
@@ -52,10 +64,17 @@ function Navbar() {
             </Link>
           )}
 
-          <Link to="/signin" className="btn-login">
-            <span className="login-icon" aria-hidden>↪</span>
-            Login
-          </Link>
+          {isAuthenticated ? (
+            <button type="button" className="btn-login" onClick={handleLogout}>
+              <span className="login-icon" aria-hidden="true">↩</span>
+              Logout
+            </button>
+          ) : (
+            <Link to="/signin" className="btn-login">
+              <span className="login-icon" aria-hidden="true">↪</span>
+              Login
+            </Link>
+          )}
         </div>
       </div>
     </header>
