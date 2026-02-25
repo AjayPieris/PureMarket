@@ -104,8 +104,8 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
                   )}
 
                   <div className="flex items-center justify-between mt-4">
-                    <div>
-                      <p className="text-2xl font-bold" style={{ color: "hsl(var(--primary))" }}>
+                    <div className="price-container">
+                      <p className="text-xl font-bold" style={{ color: "hsl(var(--primary))" }}>
                         ${product.price}
                       </p>
                       <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -113,12 +113,10 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
                       </p>
                     </div>
                     <button
-                      className="flex items-center justify-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 px-3 rounded-lg shadow-md hover:opacity-90 hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 px-3 rounded-lg shadow-md hover:opacity-90 hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed add-to-cart-btn"
                       disabled={product.stock === 0}
                       onClick={() => {
                         addToCart(product);
-                        // Optional toast replacement
-                        // toast.success(`${product.name} added to cart`);
                         alert(`${product.name} added to cart!`);
                       }}
                     >
@@ -129,13 +127,13 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
-                        style={{ marginRight: "0.5rem" }}
+                        className="cart-icon"
                       >
                         <circle cx="9" cy="21" r="1"></circle>
                         <circle cx="20" cy="21" r="1"></circle>
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                       </svg>
-                      Add
+                      <span className="btn-text">Add</span>
                     </button>
                   </div>
                 </div>

@@ -6,7 +6,8 @@ body {
 
 .container {
   max-width: 1400px;
-  margin: 0 auto; /* centers the entire section */
+  margin: 0 auto;
+  /* centers the entire section */
   padding: 2rem 1rem;
   text-align: center;
 }
@@ -27,6 +28,7 @@ body {
   color: #6b7280;
   font-weight: 500;
 }
+
 /* ===== Base Styles ===== */
 :root {
   --primary: #2563eb;
@@ -191,6 +193,7 @@ body {
   text-decoration: none;
   transition: background 0.25s ease, transform 0.25s ease;
 }
+
 .viewBoxMore:hover {
   transform: translateY(-2px);
   background: linear-gradient(135deg, #1d4ed8, #8825eb);
