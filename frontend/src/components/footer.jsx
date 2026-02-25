@@ -54,7 +54,7 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="footer-bottom">
-        <p>© 2024 MarketPlace. All rights reserved.</p>
+        <p>© 2026 MarketPlace. All rights reserved.</p>
       </div>
     </footer>
   );
