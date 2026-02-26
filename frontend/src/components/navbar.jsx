@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../components_style/navbar.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
@@ -8,16 +8,15 @@ import { useAuth } from "../context/AuthContext";
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user, role } = useAuth();
+  const [dropOpen, setDropOpen] = useState(false);
+  const dropRef = useRef(null);
 
-  // If CartProvider is guaranteed present (preferred), this will not throw.
-  // If you sometimes render Navbar outside provider (not recommended), you can wrap in try/catch.
   let cartCount = 0;
   try {
     const cart = useCart();
     cartCount = cart.cartCount;
   } catch {
-    // Fallback if not inside CartProvider (temporary safety)
     cartCount = 0;
   }
 
@@ -28,10 +27,30 @@ function Navbar() {
   const showCartLink = !isVendorPage && !isAdminPage && pathname !== "/cart";
   const showProductsLink = !isAdminPage;
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropRef.current && !dropRef.current.contains(e.target)) {
+        setDropOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = () => {
+    setDropOpen(false);
     logout();
     navigate("/signin", { replace: true });
   };
+
+  // Derive dashboard link based on role
+  const dashboardLink =
+    role === "admin" ? "/admin" : role === "vendor" ? "/vendor" : "/dashboard";
+
+  const profileImage = user?.profileImage || "";
+  const userName = user?.name || "";
+  const initials = userName ? userName.charAt(0).toUpperCase() : "U";
 
   return (
     <header className="home-nav">
@@ -65,10 +84,96 @@ function Navbar() {
           )}
 
           {isAuthenticated ? (
-            <button type="button" className="btn-login" onClick={handleLogout}>
-              <span className="login-icon" aria-hidden="true">↩</span>
-              Logout
-            </button>
+            /* ── Profile Avatar + Dropdown ── */
+            <div className="nav-avatar-wrap" ref={dropRef}>
+              <button
+                type="button"
+                className="nav-avatar-btn"
+                onClick={() => setDropOpen((o) => !o)}
+                aria-haspopup="true"
+                aria-expanded={dropOpen}
+                aria-label="Open profile menu"
+              >
+                {profileImage ? (
+                  <img src={profileImage} alt={userName || "Profile"} className="nav-avatar-img" />
+                ) : (
+                  <span className="nav-avatar-initials" aria-hidden="true">
+                    {initials}
+                  </span>
+                )}
+                <svg
+                  className={`nav-avatar-caret${dropOpen ? " open" : ""}`}
+                  width="12" height="12" viewBox="0 0 12 12" fill="none"
+                  aria-hidden="true"
+                >
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {dropOpen && (
+                <div className="nav-dropdown" role="menu">
+                  {/* User info header */}
+                  <div className="nav-drop-header">
+                    <div className="nav-drop-avatar">
+                      {profileImage ? (
+                        <img src={profileImage} alt={userName} className="nav-drop-avatar-img" />
+                      ) : (
+                        <span className="nav-drop-initials">{initials}</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="nav-drop-name">{userName || "User"}</p>
+                      <p className="nav-drop-role">{role || "member"}</p>
+                    </div>
+                  </div>
+
+                  <div className="nav-drop-divider" />
+
+                  <Link
+                    to={dashboardLink}
+                    className="nav-drop-item"
+                    role="menuitem"
+                    onClick={() => setDropOpen(false)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                      <rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                      <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                      <rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                    </svg>
+                    Dashboard
+                  </Link>
+
+                  <Link
+                    to="/account"
+                    className="nav-drop-item"
+                    role="menuitem"
+                    onClick={() => setDropOpen(false)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M12 12a5 5 0 100-10 5 5 0 000 10z" stroke="currentColor" strokeWidth="1.6" />
+                      <path d="M4 20.5c0-3.59 3.582-6.5 8-6.5s8 2.91 8 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                    </svg>
+                    Manage Account
+                  </Link>
+
+                  <div className="nav-drop-divider" />
+
+                  <button
+                    type="button"
+                    className="nav-drop-item danger"
+                    role="menuitem"
+                    onClick={handleLogout}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                    </svg>
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link to="/signin" className="btn-login">
               <span className="login-icon" aria-hidden="true">↪</span>

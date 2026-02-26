@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // for vendors (admin must approve)
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   { timestamps: true }
 );

@@ -10,6 +10,8 @@ import Product from "./pages/product";
 import Cart from "./pages/cart";
 import Vendor from "./pages/vendor";
 import Admin from "./pages/admin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // NOTE: No BrowserRouter here. It is only in main.jsx.
 export default function App() {
@@ -21,11 +23,12 @@ export default function App() {
       <Route path="/signup" element={<Register />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/vendor" element={<Vendor />} />
-      <Route path="/admin" element={<Admin />} />  
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       {/* Aliases and fallback */}
       <Route path="/login" element={<Navigate to="/signin" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
-      {/* <Route path="/products" element={<Products />} /> */}
     </Routes>
   );
 }

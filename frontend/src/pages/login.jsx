@@ -91,6 +91,7 @@ export default function Login() {
 
         <div className="log-row">
           <label className="log-label" htmlFor="password">Password</label>
+          <a className="log-forgot" href="/forgot-password">Forgot password?</a>
         </div>
         <div className="log-field">
           <span className="log-icon" aria-hidden="true">

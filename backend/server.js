@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
+import { uploadthingHandler } from "./uploadthing.js";
 
 dotenv.config();
 const app = express();
@@ -10,6 +11,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// UploadThing handler (must be before express.json body parser conflict)
+app.use("/api/uploadthing", uploadthingHandler);
 
 // after other middleware in server.js
 app.use("/uploads", express.static("uploads"));
