@@ -89,10 +89,7 @@ export default function Login() {
           />
         </div>
 
-        <div className="log-row">
-          <label className="log-label" htmlFor="password">Password</label>
-          <a className="log-forgot" href="/forgot-password">Forgot password?</a>
-        </div>
+        <label className="log-label center" htmlFor="password">Password</label>
         <div className="log-field">
           <span className="log-icon" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -111,6 +108,9 @@ export default function Login() {
             autoComplete="current-password"
             required
           />
+        </div>
+        <div style={{ textAlign: "right", marginTop: "6px" }}>
+          <a className="log-forgot" href="/forgot-password">Forgot password?</a>
         </div>
 
         {error && <p className="log-error" role="alert">{error}</p>}
