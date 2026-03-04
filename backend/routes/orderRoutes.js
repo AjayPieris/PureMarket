@@ -1,5 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
+import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // Create order
@@ -18,7 +19,6 @@ router.get("/", async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("customer", "name email")
-      .populate("products.product", "name price")
       .sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
@@ -26,14 +26,36 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get vendor orders
+// GET /api/orders/vendor/earnings — total earned by the logged-in vendor
+router.get("/vendor/earnings", protect, async (req, res) => {
+  try {
+    const vendorId = req.user._id;
+    const orders = await Order.find({
+      "orderItems.vendor": vendorId,
+      status: { $ne: "Cancelled" },
+    });
+
+    let total = 0;
+    for (const order of orders) {
+      for (const item of order.orderItems) {
+        if (item.vendor.toString() === vendorId.toString()) {
+          total += item.price * item.qty;
+        }
+      }
+    }
+
+    res.json({ totalEarning: total });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get vendor orders by ID
 router.get("/vendor/:vendorId", async (req, res) => {
   try {
     const orders = await Order.find({
-      "products.vendor": req.params.vendorId,
-    })
-      .populate("customer", "name email")
-      .populate("products.product", "name price");
+      "orderItems.vendor": req.params.vendorId,
+    }).populate("customer", "name email");
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });

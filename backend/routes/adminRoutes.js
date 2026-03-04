@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getAdminStats,
   getAllVendors,
   approveVendor,
   deleteVendor,
@@ -11,6 +12,7 @@ import { authorizeRoles } from "../middleware/roleMiddleware.js";
 const router = express.Router();
 
 // Only Admin can access these
+router.get("/stats", protect, authorizeRoles("admin"), getAdminStats);
 router.get("/vendors", protect, authorizeRoles("admin"), getAllVendors);
 router.put("/vendors/:id/approve", protect, authorizeRoles("admin"), approveVendor);
 router.delete("/vendors/:id", protect, authorizeRoles("admin"), deleteVendor);

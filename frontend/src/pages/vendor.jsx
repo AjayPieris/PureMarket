@@ -20,6 +20,7 @@ export default function VendorDashboard() {
   /* ─── Products state ─── */
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [totalEarning, setTotalEarning] = useState(null);
 
 
   /* ─── Add Product ─── */
@@ -29,7 +30,6 @@ export default function VendorDashboard() {
   const [addImagePreview, setAddImagePreview] = useState("");
   const [addUploading, setAddUploading] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
-  const [addMsg, setAddMsg] = useState("");
   const addFileInputRef = useRef(null);
 
   /* ─── Edit Modal ─── */
@@ -58,7 +58,14 @@ export default function VendorDashboard() {
     }
   }, [token]);
 
-  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  useEffect(() => {
+    fetchProducts();
+    // Fetch real earnings from orders
+    axios
+      .get(`${API_BASE}/api/orders/vendor/earnings`, { headers: authHeaders })
+      .then(({ data }) => setTotalEarning(data.totalEarning ?? 0))
+      .catch(() => setTotalEarning(0));
+  }, [fetchProducts, token]);
 
   // ── Helpers ──
   function handleAddInput(e) {
@@ -75,7 +82,6 @@ export default function VendorDashboard() {
   // ── Add Product Submit ──
   async function handleAddSubmit(e) {
     e.preventDefault();
-    setAddMsg("");
     if (!addForm.name || !addForm.price || !addForm.stock) {
       toast.error("Fill in name, price & stock.");
       return;
@@ -100,13 +106,13 @@ export default function VendorDashboard() {
       };
 
       await axios.post(`${API_BASE}/api/products`, payload, { headers: authHeaders });
-      setAddMsg("✓ Product added!");
+      toast.success("Product added successfully!");
       setAddForm(EMPTY_ADD);
       setAddImageFile(null);
       setAddImagePreview("");
       if (addFileInputRef.current) addFileInputRef.current.value = "";
       fetchProducts();
-      setTimeout(() => { setShowAddForm(false); setAddMsg(""); }, 900);
+      setTimeout(() => { setShowAddForm(false); }, 900);
     } catch (err) {
       setAddUploading(false);
       toast.error(err.response?.data?.message || "Failed to add product.");
@@ -127,7 +133,6 @@ export default function VendorDashboard() {
     });
     setEditImageFile(null);
     setEditImagePreview(product.image || "");
-    setEditMsg("");
     if (editFileInputRef.current) editFileInputRef.current.value = "";
   }
   function handleEditInput(e) {
@@ -143,7 +148,6 @@ export default function VendorDashboard() {
 
   async function saveEdit(e) {
     e.preventDefault();
-    setEditMsg("");
     setEditLoading(true);
     try {
       let imageUrl = editingProduct.image || "";
@@ -164,6 +168,7 @@ export default function VendorDashboard() {
       };
 
       await axios.put(`${API_BASE}/api/products/${editingProduct._id}`, payload, { headers: authHeaders });
+      toast.success("Product updated successfully!");
       cancelEdit();
       fetchProducts();
     } catch (err) {
@@ -179,7 +184,6 @@ export default function VendorDashboard() {
     setEditForm(null);
     setEditImageFile(null);
     setEditImagePreview("");
-    setEditMsg("");
     if (editFileInputRef.current) editFileInputRef.current.value = "";
   }
 
@@ -190,6 +194,7 @@ export default function VendorDashboard() {
     try {
       await axios.delete(`${API_BASE}/api/products/${id}`, { headers: authHeaders });
       setProducts((p) => p.filter((x) => x._id !== id));
+      toast.success("Product deleted successfully!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Delete failed.");
     } finally {
@@ -234,7 +239,7 @@ export default function VendorDashboard() {
             { label: "Total Products", value: loadingProducts ? "…" : products.length },
             { label: "Total Stock", value: loadingProducts ? "…" : products.reduce((s, p) => s + (p.stock || 0), 0) },
             { label: "Categories", value: loadingProducts ? "…" : new Set(products.map((p) => p.category)).size },
-            { label: "Avg Price", value: loadingProducts ? "…" : products.length ? `$${(products.reduce((s, p) => s + p.price, 0) / products.length).toFixed(2)}` : "$0" },
+            { label: "Total Earning", value: totalEarning === null ? "…" : `$${Number(totalEarning).toFixed(2)}` },
           ].map((s, i) => (
             <div key={i} className="rounded-xl bg-white border p-5 shadow-sm hover:shadow-md transition">
               <p className="text-sm text-slate-500">{s.label}</p>
@@ -299,16 +304,14 @@ export default function VendorDashboard() {
                 </div>
               </div>
 
-              {addMsg && (
-                <p className={`text-sm font-medium ${addMsg.startsWith("✓") ? "text-green-600" : "text-red-500"}`}>{addMsg}</p>
-              )}
+
 
               <div className="flex items-center gap-3">
                 <button type="submit" disabled={addLoading || addUploading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-semibold shadow hover:scale-[1.02] transition disabled:opacity-60">
                   {addLoading ? (addUploading ? "Uploading…" : "Saving…") : "Add Product"}
                 </button>
-                <button type="button" onClick={() => { setShowAddForm(false); setAddForm(EMPTY_ADD); setAddImagePreview(""); setAddImageFile(null); setAddMsg(""); }}
+                <button type="button" onClick={() => { setShowAddForm(false); setAddForm(EMPTY_ADD); setAddImagePreview(""); setAddImageFile(null); }}
                   className="px-4 py-2 rounded-md border font-medium">
                   Cancel
                 </button>
@@ -352,7 +355,7 @@ export default function VendorDashboard() {
                           )}
                           <div>
                             <div className="font-semibold">{p.name}</div>
-                            <div className="text-sm text-slate-500 line-clamp-1">{p.description}</div>
+                            <div className="text-sm text-slate-500">{p.category}</div>
                           </div>
                         </div>
                       </td>

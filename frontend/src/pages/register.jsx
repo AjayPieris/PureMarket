@@ -15,7 +15,6 @@ export default function Register() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -34,7 +33,6 @@ export default function Register() {
     // Show local preview immediately
     setPreviewUrl(URL.createObjectURL(file));
     setUploading(true);
-    setMsg("");
 
     try {
       const res = await uploadFiles("imageUploader", { files: [file] });
@@ -50,7 +48,6 @@ export default function Register() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setMsg("");
     setLoading(true);
     try {
       const payload = {
@@ -60,7 +57,7 @@ export default function Register() {
       };
 
       const { data } = await axios.post(`${API_BASE}/api/auth/register`, payload);
-      setMsg(data.message || "Registered successfully");
+      toast.success(data.message || "Registered successfully!");
       const successMessage = data.message || "Registration successful! Please sign in.";
       navigate("/signin", {
         state: {
