@@ -17,6 +17,12 @@ export default function VendorDashboard() {
   const { token } = useAuth();
   const authHeaders = { Authorization: `Bearer ${token}` };
 
+  /* ─── Approval state ─── */
+  const [isApproved, setIsApproved] = useState(false); // default false — confirmed by /api/auth/me
+  const [storeLink, setStoreLink] = useState("");
+  const [storeLinkInput, setStoreLinkInput] = useState("");
+  const [storeLinkLoading, setStoreLinkLoading] = useState(false);
+
   /* ─── Products state ─── */
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -59,13 +65,42 @@ export default function VendorDashboard() {
   }, [token]);
 
   useEffect(() => {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // Fetch vendor profile for approval status + store link
+    axios.get(`${API_BASE}/api/auth/me`, { headers })
+      .then(({ data }) => {
+        setIsApproved(data.isApproved ?? true);
+        setStoreLink(data.storeLink || "");
+        setStoreLinkInput(data.storeLink || "");
+      })
+      .catch(() => {});
+
     fetchProducts();
-    // Fetch real earnings from orders
     axios
-      .get(`${API_BASE}/api/orders/vendor/earnings`, { headers: authHeaders })
+      .get(`${API_BASE}/api/orders/vendor/earnings`, { headers })
       .then(({ data }) => setTotalEarning(data.totalEarning ?? 0))
       .catch(() => setTotalEarning(0));
   }, [fetchProducts, token]);
+
+  async function handleStoreLinkSubmit(e) {
+    e.preventDefault();
+    if (!storeLinkInput.trim()) { toast.error("Please enter a store link."); return; }
+    setStoreLinkLoading(true);
+    try {
+      await axios.put(`${API_BASE}/api/auth/vendor/store-link`,
+        { storeLink: storeLinkInput.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setStoreLink(storeLinkInput.trim());
+      toast.success("Store link submitted! Admin will review it shortly.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit link.");
+    } finally {
+      setStoreLinkLoading(false);
+    }
+  }
 
   // ── Helpers ──
   function handleAddInput(e) {
@@ -224,12 +259,14 @@ export default function VendorDashboard() {
             <Link to="/products" className="hidden sm:inline-block text-sm font-semibold px-4 py-2 border rounded-md hover:bg-slate-50">
               View Store
             </Link>
-            <button
-              onClick={() => setShowAddForm((s) => !s)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-semibold shadow-lg hover:scale-[1.03] transition"
-            >
-              {showAddForm ? "Close Form" : "+ Add Product"}
-            </button>
+            {isApproved && (
+              <button
+                onClick={() => setShowAddForm((s) => !s)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-semibold shadow-lg hover:scale-[1.03] transition"
+              >
+                {showAddForm ? "Close Form" : "+ Add Product"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -250,8 +287,47 @@ export default function VendorDashboard() {
           ))}
         </section>
 
+        {/* ── Approval Pending Banner ── */}
+        {!isApproved && (
+          <section className="mb-8 rounded-xl border border-amber-300 bg-amber-50 p-5 shadow-sm">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="text-2xl">⏳</span>
+              <div>
+                <p className="font-bold text-amber-800">Account Pending Approval</p>
+                <p className="text-sm text-amber-700 mt-0.5">
+                  Your vendor account is awaiting admin approval. You cannot add products until approved.
+                  Submit your store or business link below so the admin can review it.
+                </p>
+              </div>
+            </div>
+            <form onSubmit={handleStoreLinkSubmit} className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="url"
+                placeholder="https://your-store.com or social media link"
+                value={storeLinkInput}
+                onChange={(e) => setStoreLinkInput(e.target.value)}
+                className="flex-1 rounded-md border border-amber-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                required
+              />
+              <button
+                type="submit"
+                disabled={storeLinkLoading}
+                className="px-5 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition disabled:opacity-60"
+              >
+                {storeLinkLoading ? "Submitting…" : storeLink ? "Update Link" : "Submit for Review"}
+              </button>
+            </form>
+            {storeLink && (
+              <p className="mt-2 text-xs text-amber-600">
+                ✓ Link submitted: <a href={storeLink} target="_blank" rel="noopener noreferrer" className="underline break-all">{storeLink}</a>
+              </p>
+            )}
+          </section>
+        )}
+
         {/* Add Product Form */}
         {showAddForm && (
+
           <section className="mb-10 rounded-xl bg-white border p-6 shadow-sm">
             <h2 className="text-lg font-bold mb-4">Add New Product</h2>
             <form onSubmit={handleAddSubmit} className="space-y-5">

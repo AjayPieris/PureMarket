@@ -25,10 +25,27 @@ export const getAdminStats = async (req, res) => {
   }
 };
 
-// 🔹 Get all vendors
+// 🔹 Get all vendors with their product count
 export const getAllVendors = async (req, res) => {
   try {
-    const vendors = await User.find({ role: "vendor" }).select("-password");
+    const vendors = await User.aggregate([
+      { $match: { role: "vendor" } },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "vendor",
+          as: "products",
+        },
+      },
+      {
+        $addFields: { totalProducts: { $size: "$products" } },
+      },
+      {
+        $project: { password: 0, products: 0 },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
     res.json(vendors);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -64,6 +81,51 @@ export const deleteVendor = async (req, res) => {
 
     await vendor.deleteOne();
     res.json({ message: "Vendor deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// 🔹 Get all customers with their order count
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.aggregate([
+      { $match: { role: "customer" } },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "_id",
+          foreignField: "customer",
+          as: "orders",
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          "orders.orderItems": 0,
+        },
+      },
+      {
+        $addFields: { totalOrders: { $size: "$orders" } },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// 🔹 Toggle block/unblock a user
+export const toggleBlockUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user || user.role === "admin") {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+    res.json({ message: user.isBlocked ? "User blocked" : "User unblocked", isBlocked: user.isBlocked });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

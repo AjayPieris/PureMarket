@@ -21,8 +21,11 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];   // ✂️ Extract the token part after "Bearer"
       const decoded = jwt.verify(token, process.env.JWT_SECRET); // 🔍 Verify token using secret key
 
-      req.user = await User.findById(decoded.id).select("-password"); // 👤 Find user in DB (exclude password)
-      next();                                        // ✅ Allow request to continue to next middleware or route
+      req.user = await User.findById(decoded.id).select("-password");
+      if (!req.user) {
+        return res.status(401).json({ message: "Account not found. Please log in again." });
+      }
+      next();
     } catch (err) {
       res.status(401).json({ message: "Not authorized, token failed" }); // ❌ Token invalid or expired
     }

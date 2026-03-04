@@ -33,6 +33,8 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    storeLink: { type: String, default: "" },
+    isBlocked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

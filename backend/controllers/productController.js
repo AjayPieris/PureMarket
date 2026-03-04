@@ -3,6 +3,10 @@ import Product from "../models/Product.js";
 // 🔹 Add new product (Vendor only)
 export const addProduct = async (req, res) => {
   try {
+    if (!req.user.isApproved) {
+      return res.status(403).json({ message: "Your account is pending admin approval. You cannot add products yet." });
+    }
+
     const { name, description, price, stock, category, image } = req.body;
 
     const product = new Product({

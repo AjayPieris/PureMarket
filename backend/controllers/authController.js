@@ -60,10 +60,7 @@ export const loginUser = async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    if (user.role === "vendor" && !user.isApproved) {
-      return res.status(403).json({ message: "Vendor account not yet approved by admin" });
-    }
-
+    // Vendors CAN log in even if not approved — they just can't add products
     const token = generateToken(user);
 
     res.json({
@@ -86,7 +83,6 @@ export const loginUser = async (req, res) => {
 // 🔹 Get current user profile (for navbar / app init)
 export const getMe = async (req, res) => {
   try {
-    // req.user is already populated by the protect middleware
     const user = req.user;
     res.json({
       id: user._id,
@@ -95,7 +91,24 @@ export const getMe = async (req, res) => {
       role: user.role,
       isApproved: user.isApproved,
       profileImage: user.profileImage || "",
+      storeLink: user.storeLink || "",
     });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// 🔹 Vendor submits their store link for admin review
+export const updateStoreLink = async (req, res) => {
+  try {
+    const { storeLink } = req.body;
+    if (!storeLink) return res.status(400).json({ message: "Store link is required." });
+
+    const user = await User.findById(req.user._id);
+    user.storeLink = storeLink;
+    await user.save();
+
+    res.json({ message: "Store link submitted successfully.", storeLink });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
