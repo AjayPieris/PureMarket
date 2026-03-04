@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { uploadFiles } from "../utils/uploadthing";
 import "../page_style/register.css";
+import { toast } from "react-toastify";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
@@ -40,7 +41,7 @@ export default function Register() {
       const url = res?.[0]?.url || res?.[0]?.ufsUrl || "";
       setProfileImageUrl(url);
     } catch (err) {
-      setMsg("Image upload failed: " + (err.message || "Unknown error"));
+      toast.error("Image upload failed: " + (err.message || "Unknown error"));
       setPreviewUrl("");
     } finally {
       setUploading(false);
@@ -71,7 +72,7 @@ export default function Register() {
     } catch (err) {
       const message =
         err.response?.data?.message || err.message || "Registration failed";
-      setMsg(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -229,7 +230,7 @@ export default function Register() {
           {loading ? "Creating…" : "Create Account"}
         </button>
 
-        {msg && <p className="reg-message" role="alert">{msg}</p>}
+
 
         <p className="reg-muted">
           Already have an account? <a className="reg-link" href="/signin">Sign in</a>

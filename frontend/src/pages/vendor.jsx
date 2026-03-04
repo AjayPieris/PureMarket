@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { uploadFiles } from "../utils/uploadthing";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
@@ -19,7 +20,7 @@ export default function VendorDashboard() {
   /* ─── Products state ─── */
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [apiError, setApiError] = useState("");
+
 
   /* ─── Add Product ─── */
   const [showAddForm, setShowAddForm] = useState(false);
@@ -38,7 +39,7 @@ export default function VendorDashboard() {
   const [editImagePreview, setEditImagePreview] = useState("");
   const [editUploading, setEditUploading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
-  const [editMsg, setEditMsg] = useState("");
+
   const editFileInputRef = useRef(null);
 
   /* ─── Delete ─── */
@@ -47,12 +48,11 @@ export default function VendorDashboard() {
   // ── Load vendor's products on mount ──
   const fetchProducts = useCallback(async () => {
     setLoadingProducts(true);
-    setApiError("");
     try {
       const { data } = await axios.get(`${API_BASE}/api/products/my/products`, { headers: authHeaders });
       setProducts(data);
     } catch (err) {
-      setApiError(err.response?.data?.message || "Failed to load products.");
+      toast.error(err.response?.data?.message || "Failed to load products.");
     } finally {
       setLoadingProducts(false);
     }
@@ -77,7 +77,7 @@ export default function VendorDashboard() {
     e.preventDefault();
     setAddMsg("");
     if (!addForm.name || !addForm.price || !addForm.stock) {
-      setAddMsg("Fill in name, price & stock.");
+      toast.error("Fill in name, price & stock.");
       return;
     }
     setAddLoading(true);
@@ -109,7 +109,7 @@ export default function VendorDashboard() {
       setTimeout(() => { setShowAddForm(false); setAddMsg(""); }, 900);
     } catch (err) {
       setAddUploading(false);
-      setAddMsg(err.response?.data?.message || "Failed to add product.");
+      toast.error(err.response?.data?.message || "Failed to add product.");
     } finally {
       setAddLoading(false);
     }
@@ -168,7 +168,7 @@ export default function VendorDashboard() {
       fetchProducts();
     } catch (err) {
       setEditUploading(false);
-      setEditMsg(err.response?.data?.message || "Update failed.");
+      toast.error(err.response?.data?.message || "Update failed.");
     } finally {
       setEditLoading(false);
     }
@@ -191,7 +191,7 @@ export default function VendorDashboard() {
       await axios.delete(`${API_BASE}/api/products/${id}`, { headers: authHeaders });
       setProducts((p) => p.filter((x) => x._id !== id));
     } catch (err) {
-      alert(err.response?.data?.message || "Delete failed.");
+      toast.error(err.response?.data?.message || "Delete failed.");
     } finally {
       setDeletingId(null);
     }
@@ -320,7 +320,7 @@ export default function VendorDashboard() {
         {/* Products Table */}
         <section className="mb-14">
           <h2 className="text-xl font-bold mb-4">Your Products</h2>
-          {apiError && <p className="text-red-500 mb-4">{apiError}</p>}
+
 
           {loadingProducts ? (
             <div className="text-center py-12 text-slate-400">Loading products…</div>
@@ -437,8 +437,6 @@ export default function VendorDashboard() {
                 </div>
                 {editUploading && <p className="text-xs text-purple-500 mt-1">Uploading image…</p>}
               </div>
-
-              {editMsg && <p className="text-sm text-red-500">{editMsg}</p>}
 
               <div className="flex items-center gap-3">
                 <button type="submit" disabled={editLoading || editUploading}

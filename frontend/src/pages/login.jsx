@@ -3,10 +3,10 @@ import "../page_style/login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -18,7 +18,6 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
@@ -48,7 +47,7 @@ export default function Login() {
       }
     } catch (err) {
       const message = err.response?.data?.message || err.message || "Login failed";
-      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -113,7 +112,7 @@ export default function Login() {
           <a className="log-forgot" href="/forgot-password">Forgot password?</a>
         </div>
 
-        {error && <p className="log-error" role="alert">{error}</p>}
+
         <button type="submit" className="log-btn" disabled={loading}>
           {loading ? "Signing in..." : "Sign In"}
         </button>

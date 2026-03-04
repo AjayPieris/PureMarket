@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import "../page_style/login.css";
+import { toast } from "react-toastify";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
@@ -10,8 +11,6 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ password: "", confirm: "" });
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [isError, setIsError] = useState(false);
   const [showPw, setShowPw] = useState(false);
 
   function handleChange(e) {
@@ -21,16 +20,12 @@ export default function ResetPassword() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setMsg("");
-    setIsError(false);
     if (form.password !== form.confirm) {
-      setIsError(true);
-      setMsg("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
     if (form.password.length < 6) {
-      setIsError(true);
-      setMsg("Password must be at least 6 characters.");
+      toast.error("Password must be at least 6 characters.");
       return;
     }
     setLoading(true);
@@ -39,11 +34,10 @@ export default function ResetPassword() {
         `${API_BASE}/api/auth/reset-password/${token}`,
         { password: form.password }
       );
-      setMsg(data.message || "Password reset!");
+      toast.success(data.message || "Password reset!");
       setTimeout(() => navigate("/signin", { replace: true }), 2000);
     } catch (err) {
-      setIsError(true);
-      setMsg(err.response?.data?.message || err.message || "Reset failed.");
+      toast.error(err.response?.data?.message || err.message || "Reset failed.");
     } finally {
       setLoading(false);
     }
@@ -121,19 +115,7 @@ export default function ResetPassword() {
           />
         </div>
 
-        {msg && (
-          <p
-            className="log-error"
-            role="alert"
-            style={
-              !isError
-                ? { background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0" }
-                : {}
-            }
-          >
-            {msg}
-          </p>
-        )}
+
 
         <button type="submit" className="log-btn" disabled={loading}>
           {loading ? "Saving…" : "Reset Password"}

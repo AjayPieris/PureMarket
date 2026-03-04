@@ -2,26 +2,22 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import "../page_style/login.css";
+import { toast } from "react-toastify";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [isError, setIsError] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setMsg("");
-    setIsError(false);
     try {
       const { data } = await axios.post(`${API_BASE}/api/auth/forgot-password`, { email });
-      setMsg(data.message || "Reset link sent!");
+      toast.success(data.message || "Reset link sent!");
     } catch (err) {
-      setIsError(true);
-      setMsg(err.response?.data?.message || err.message || "Something went wrong.");
+      toast.error(err.response?.data?.message || err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -61,19 +57,7 @@ export default function ForgotPassword() {
           />
         </div>
 
-        {msg && (
-          <p
-            className="log-error"
-            role="alert"
-            style={
-              !isError
-                ? { background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0" }
-                : {}
-            }
-          >
-            {msg}
-          </p>
-        )}
+
 
         <button type="submit" className="log-btn" disabled={loading}>
           {loading ? "Sending…" : "Send Reset Link"}
