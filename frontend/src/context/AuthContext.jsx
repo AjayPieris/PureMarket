@@ -36,13 +36,12 @@ export function AuthProvider({ children }) {
     });
 
     // Then silently fetch the LATEST profile (profileImage may have changed)
-    fetch(`${API_BASE}/api/auth/me`, {
+    // Using axios so the blocked-user interceptor applies here too
+    axios.get(`${API_BASE}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
+      .then(({ data }) => {
         if (!data) return;
-        // Persist fresh data to localStorage
         if (data.name) localStorage.setItem("userName", data.name);
         localStorage.setItem("profileImage", data.profileImage || "");
         localStorage.setItem("role", (data.role || "").toLowerCase());
@@ -59,7 +58,7 @@ export function AuthProvider({ children }) {
         }));
       })
       .catch(() => {
-        // Network error — keep localStorage values
+        // Network error or 403 blocked → interceptor handles blocked case
       });
   }, []);
 
