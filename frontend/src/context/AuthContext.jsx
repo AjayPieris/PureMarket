@@ -69,14 +69,16 @@ export function AuthProvider({ children }) {
       (res) => res,
       (err) => {
         if (err.response?.status === 403 && err.response?.data?.blocked) {
-          // Clear everything
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
-          localStorage.removeItem("userName");
-          localStorage.removeItem("profileImage");
-          setAuth({ isAuthenticated: false, token: "", role: "", user: null, initialized: true });
-          // Redirect to login with a flag so the login page can show a toast
-          window.location.href = "/login?blocked=1";
+          // Skip redirect for the login endpoint — let login.jsx show the toast itself
+          const url = err.config?.url || "";
+          if (!url.includes("/auth/login")) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("userName");
+            localStorage.removeItem("profileImage");
+            setAuth({ isAuthenticated: false, token: "", role: "", user: null, initialized: true });
+            window.location.href = "/login?blocked=1";
+          }
         }
         return Promise.reject(err);
       }
