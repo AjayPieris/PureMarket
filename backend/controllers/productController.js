@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 // 🔹 Add new product (Vendor only)
 export const addProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, category } = req.body;
+    const { name, description, price, stock, category, image } = req.body;
 
     const product = new Product({
       vendor: req.user._id,
@@ -12,11 +12,21 @@ export const addProduct = async (req, res) => {
       price,
       stock,
       category,
-      image: req.file ? req.file.filename : null,
+      image: image || "",   // CDN URL from UploadThing
     });
 
     await product.save();
     res.status(201).json({ message: "Product added successfully", product });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// 🔹 Get vendor's own products
+export const getVendorProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ vendor: req.user._id }).sort({ createdAt: -1 });
+    res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -53,15 +63,14 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to update this product" });
     }
 
-    const { name, description, price, stock, category } = req.body;
+    const { name, description, price, stock, category, image } = req.body;
 
     product.name = name || product.name;
     product.description = description || product.description;
     product.price = price || product.price;
     product.stock = stock || product.stock;
     product.category = category || product.category;
-
-    if (req.file) product.image = req.file.filename;
+    if (image !== undefined) product.image = image; // CDN URL from UploadThing
 
     await product.save();
     res.json({ message: "Product updated successfully", product });
