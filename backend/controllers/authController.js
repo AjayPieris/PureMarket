@@ -61,6 +61,10 @@ export const loginUser = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     // Vendors CAN log in even if not approved — they just can't add products
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Your account has been blocked by the admin.", blocked: true });
+    }
+
     const token = generateToken(user);
 
     res.json({

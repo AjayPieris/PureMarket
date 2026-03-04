@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../page_style/login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Show toast if redirected here after being blocked
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("blocked") === "1") {
+      toast.error("Your account has been blocked by the admin.");
+      // Clean the URL without reloading
+      window.history.replaceState({}, "", "/login");
+    }
+  }, []);
 
   function handleChange(e) {
     const { name, value } = e.target;

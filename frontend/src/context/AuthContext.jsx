@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+
 
 const AuthContext = createContext(null);
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
@@ -59,6 +61,27 @@ export function AuthProvider({ children }) {
       .catch(() => {
         // Network error — keep localStorage values
       });
+  }, []);
+
+  // Global interceptor: if any API call returns 403 blocked, force logout immediately
+  useEffect(() => {
+    const id = axios.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        if (err.response?.status === 403 && err.response?.data?.blocked) {
+          // Clear everything
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          localStorage.removeItem("userName");
+          localStorage.removeItem("profileImage");
+          setAuth({ isAuthenticated: false, token: "", role: "", user: null, initialized: true });
+          // Redirect to login with a flag so the login page can show a toast
+          window.location.href = "/login?blocked=1";
+        }
+        return Promise.reject(err);
+      }
+    );
+    return () => axios.interceptors.response.eject(id);
   }, []);
 
   function login({ token, user, role }) {
