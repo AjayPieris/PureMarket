@@ -33,17 +33,20 @@ export const getAllVendors = async (req, res) => {
       {
         $lookup: {
           from: "products",
-          localField: "_id",
-          foreignField: "vendor",
-          as: "products",
+          let: { vendorId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$vendor", "$$vendorId"] } } },
+            { $count: "count" },
+          ],
+          as: "productCount",
         },
       },
       {
-        $addFields: { totalProducts: { $size: "$products" } },
+        $addFields: {
+          totalProducts: { $ifNull: [{ $arrayElemAt: ["$productCount.count", 0] }, 0] },
+        },
       },
-      {
-        $project: { password: 0, products: 0 },
-      },
+      { $project: { password: 0, productCount: 0 } },
       { $sort: { createdAt: -1 } },
     ]);
     res.json(vendors);
