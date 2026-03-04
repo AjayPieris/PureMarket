@@ -85,6 +85,28 @@ export function AuthProvider({ children }) {
     return () => axios.interceptors.response.eject(id);
   }, []);
 
+  // Periodically re-check auth status so blocked users are detected quickly
+  useEffect(() => {
+    function checkAuth() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      // Interceptor handles 403 blocked response automatically
+      axios.get(`${API_BASE}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+
+    // Re-check when user brings tab back into focus
+    document.addEventListener("visibilitychange", checkAuth);
+    // Also poll every 45 seconds for mid-session block detection
+    const interval = setInterval(checkAuth, 45000);
+
+    return () => {
+      document.removeEventListener("visibilitychange", checkAuth);
+      clearInterval(interval);
+    };
+  }, []);
+
   function login({ token, user, role }) {
     const finalRole = (role || user?.role || "").toLowerCase();
     localStorage.setItem("token", token);

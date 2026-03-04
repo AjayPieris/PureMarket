@@ -94,6 +94,7 @@ export const getMe = async (req, res) => {
       email: user.email,
       role: user.role,
       isApproved: user.isApproved,
+      isBlocked: user.isBlocked || false,
       profileImage: user.profileImage || "",
       storeLink: user.storeLink || "",
     });
