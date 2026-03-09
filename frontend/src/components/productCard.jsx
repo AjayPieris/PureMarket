@@ -12,7 +12,10 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem("product_favorites");
+    return saved ? JSON.parse(saved) : [];
+  });
   const { addToCart } = useCart();
   const { user } = useAuth();
 
@@ -39,15 +42,30 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
       return matchesQuery && matchesCategory;
     });
 
-    switch (sort) {
-      case "price-low":  return [...list].sort((a, b) => a.price - b.price);
-      case "price-high": return [...list].sort((a, b) => b.price - a.price);
-      default:           return [...list].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
-    }
-  }, [allProducts, searchQuery, category, sort]);
+    let sortedList = [...list].sort((a, b) => {
+      const isFavA = favorites.includes(a._id);
+      const isFavB = favorites.includes(b._id);
+      
+      if (isFavA && !isFavB) return -1;
+      if (!isFavA && isFavB) return 1;
 
-  const toggleFavorite = (id) =>
-    setFavorites((prev) => prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]);
+      switch (sort) {
+        case "price-low":  return a.price - b.price;
+        case "price-high": return b.price - a.price;
+        default:           return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      }
+    });
+    
+    return sortedList;
+  }, [allProducts, searchQuery, category, sort, favorites]);
+
+  const toggleFavorite = (id) => {
+    setFavorites((prev) => {
+      const newFavs = prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id];
+      localStorage.setItem("product_favorites", JSON.stringify(newFavs));
+      return newFavs;
+    });
+  };
 
   if (loading) {
     return (

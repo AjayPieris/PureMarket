@@ -6,6 +6,25 @@ import { useCart } from "../context/CartContext";
 export default function Cart() {
   const { cart, removeFromCart, clearCart, total } = useCart();
 
+  // Aggregate cart items by _id
+  const groupedCart = cart.reduce((acc, item, index) => {
+    // We keep track of the first index this item was added so we can still remove it
+    // A more robust cart system would remove by ID, but we'll use the original index
+    const existing = acc.find(g => g._id === item._id);
+    if (existing) {
+      existing.quantity += 1;
+      // Store all original indices so removing it removes all instances, 
+      // or we can just remove the first instance of it.
+      existing.indices.push(index);
+    } else {
+      acc.push({ ...item, quantity: 1, indices: [index] });
+    }
+    return acc;
+  }, []);
+
+  // Require CartContext and context functions
+  const { addToCart } = useCart();
+  
   return (
     <>
       <Navbar />
@@ -42,31 +61,66 @@ export default function Cart() {
           ) : (
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                {cart.map((item, index) => (
+                {groupedCart.map((group) => (
                   <div
-                    key={index}
+                    key={group._id || group.indices[0]}
                     className="card glass p-6 mb-4 flex items-center gap-4"
                   >
                     <img
-                      src={item.image}
-                      alt={item.name}
+                      src={group.images?.[0] || group.image}
+                      alt={group.name}
                       className="w-24 h-24 object-cover rounded-xl"
                     />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-sm text-gray-500">by {item.vendor}</p>
-                      <p className="font-bold mt-2 text-blue-600">
-                        ${item.price}
-                      </p>
+                      <h3 className="font-semibold text-lg">{group.name}</h3>
+                      <p className="text-sm text-gray-500">by {group.vendor?.name || group.vendor}</p>
+                      <div className="flex items-center gap-4 mt-3">
+                        <p className="font-bold text-blue-600 text-lg">
+                          ${Number(group.price).toFixed(2)}
+                        </p>
+                        
+                        {/* Quantity Selector */}
+                        <div className="flex items-center border border-gray-200 rounded-lg w-max bg-white overflow-hidden shadow-sm">
+                          <button 
+                            onClick={() => removeFromCart(group.indices[group.indices.length - 1])}
+                            className="px-3 py-1 text-gray-600 hover:bg-gray-100 hover:text-red-500 transition-colors"
+                            title="Decrease quantity"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                          </button>
+                          
+                          <div className="w-10 text-center font-bold text-gray-900 border-x border-gray-200 py-1 text-sm bg-gray-50">
+                            {group.quantity}
+                          </div>
+                          
+                          <button 
+                            onClick={() => {
+                              // Re-construct the raw item without the grouping extras to pass back to CartContext
+                              const { quantity, indices, ...rawItem } = group;
+                              addToCart(rawItem);
+                            }}
+                            disabled={group.quantity >= group.stock}
+                            className="px-3 py-1 text-gray-600 hover:bg-gray-100 hover:text-purple-600 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Increase quantity"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                    {/* Move the "remove all" button to absolute top-right or keep it here but styled softer since they can use the minus button */}
                     <button
-                      className="btn btn-ghost btn-icon"
-                      onClick={() => removeFromCart(index)}
-                      title="Remove item"
+                      className="btn btn-ghost btn-icon text-gray-400 hover:text-red-600 p-2 rounded-lg self-start mt-2"
+                      onClick={() => {
+                        // To remove the whole group, we need to remove all its indices (in reverse order to avoid shifting bugs)
+                        const reversedIndices = [...group.indices].sort((a,b) => b - a);
+                        reversedIndices.forEach(idx => removeFromCart(idx));
+                      }}
+                      title="Remove all of this item"
                     >
                       <svg
-                        width="20"
-                        height="20"
+                        width="24"
+                        height="24"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -89,12 +143,12 @@ export default function Cart() {
                   </div>
                   <div className="flex justify-between mb-2">
                     <span>Shipping</span>
-                    <span className="font-semibold">$10.00</span>
+                    <span className="font-semibold text-green-600">Free</span>
                   </div>
                   <div className="flex justify-between border-t pt-4 mb-4">
                     <span className="text-lg font-bold">Total</span>
                     <span className="text-2xl font-bold text-blue-600">
-                      ${(total + 10).toFixed(2)}
+                      ${total.toFixed(2)}
                     </span>
                   </div>
                   <a
