@@ -99,3 +99,22 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// 🔹 Buy product instantly
+export const buyProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    if (product.stock <= 0) {
+      return res.status(400).json({ message: "Out of stock" });
+    }
+
+    product.stock -= 1;
+    await product.save();
+
+    res.json({ message: "Successfully booked now", product });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

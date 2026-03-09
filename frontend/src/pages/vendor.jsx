@@ -11,7 +11,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 const CATEGORIES = ["Electronics", "Fashion", "Sports", "Home", "Beauty", "Food", "Other"];
 
-const EMPTY_ADD = { name: "", price: "", stock: "", category: "Electronics", description: "" };
+const EMPTY_ADD = { name: "", price: "", stock: "", rating: "5.0", category: "Electronics", description: "" };
 
 export default function VendorDashboard() {
   const { token } = useAuth();
@@ -149,6 +149,7 @@ export default function VendorDashboard() {
         description: addForm.description,
         price: parseFloat(addForm.price),
         stock: parseInt(addForm.stock, 10),
+        rating: parseFloat(addForm.rating),
         category: addForm.category,
         images: imageUrls,
       };
@@ -175,6 +176,7 @@ export default function VendorDashboard() {
       name: product.name,
       price: product.price,
       stock: product.stock,
+      rating: product.rating || 5.0,
       category: product.category,
       description: product.description || "",
     });
@@ -239,6 +241,7 @@ export default function VendorDashboard() {
         description: editForm.description,
         price: parseFloat(editForm.price),
         stock: parseInt(editForm.stock, 10),
+        rating: parseFloat(editForm.rating),
         category: editForm.category,
         images: imageUrls,
       };
@@ -390,12 +393,19 @@ export default function VendorDashboard() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <select name="category" value={addForm.category} onChange={handleAddInput}
-                  className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
-                  {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <select name="category" value={addForm.category} onChange={handleAddInput}
+                    className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
+                    {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Initial Rating</label>
+                  <input name="rating" type="number" step="0.1" min="1" max="5" value={addForm.rating} onChange={handleAddInput}
+                    className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300" required />
+                </div>
               </div>
 
               <div>
@@ -552,12 +562,19 @@ export default function VendorDashboard() {
                     className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300" required />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <select name="category" value={editForm.category} onChange={handleEditInput}
-                  className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
-                  {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <select name="category" value={editForm.category} onChange={handleEditInput}
+                    className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
+                    {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Rating</label>
+                  <input name="rating" type="number" step="0.1" min="1" max="5" value={editForm.rating} onChange={handleEditInput}
+                    className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300" required />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>

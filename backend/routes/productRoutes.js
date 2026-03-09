@@ -6,6 +6,7 @@ import {
   getVendorProducts,
   updateProduct,
   deleteProduct,
+  buyProduct,
 } from "../controllers/productController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
@@ -32,5 +33,8 @@ router.put("/:id", protect, authorizeRoles("vendor"), updateProduct);
 
 // DELETE /api/products/:id → Delete product
 router.delete("/:id", protect, authorizeRoles("vendor"), deleteProduct);
+
+// POST /api/products/:id/buy → Buy product directly
+router.post("/:id/buy", buyProduct);
 
 export default router;

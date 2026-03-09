@@ -12,6 +12,7 @@ import Vendor from "./pages/vendor";
 import Admin from "./pages/admin";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ProductDetails from "./pages/ProductDetails";
 
 // NOTE: No BrowserRouter here. It is only in main.jsx.
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/products" element={<Product />} />
+      <Route path="/product/:id" element={<ProductDetails />} />
       <Route path="/signin" element={<Login />} />
       <Route path="/signup" element={<Register />} />
       <Route path="/cart" element={<Cart />} />
