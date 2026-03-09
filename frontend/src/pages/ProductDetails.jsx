@@ -47,34 +47,22 @@ export default function ProductDetails() {
     }
   };
 
-  const handleBuyNow = async () => {
+  const handleBuyNow = () => {
     if (!user || !token) {
       toast.error("Please login to buy products.");
       return;
     }
     if (!product || product.stock <= 0) return;
-    setBuying(true);
-    try {
-      const { data } = await axios.post(
-        `${API_BASE}/api/products/${id}/buy`,
-        { quantity: orderQuantity },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setProduct(data.product);
-      
-      // Instead of toast, navigate to success page
-      navigate("/order-success", { 
-        state: { 
-          product,
-          vendorName: product.vendor?.name,
-          vendorEmail: product.vendor?.email 
-        } 
-      });
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to book product");
-    } finally {
-      setBuying(false);
-    }
+
+    // Build a list of items representing the chosen quantity
+    const items = Array.from({ length: orderQuantity }, () => ({ ...product }));
+
+    // Navigate to checkout with the item(s) pre-filled
+    navigate("/checkout", {
+      state: {
+        directItems: items,
+      }
+    });
   };
 
   useEffect(() => {
