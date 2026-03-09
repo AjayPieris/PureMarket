@@ -36,7 +36,8 @@ export default function VendorDashboard() {
   const [addImages, setAddImages] = useState([null, null, null, null]);
   const [addUploading, setAddUploading] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
-  const addFileInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  // single ref whose .current is an array of 4 file-input DOM nodes
+  const addFileInputRefs = useRef([]);
 
   /* ─── Edit Modal ─── */
   const [editingProduct, setEditingProduct] = useState(null);
@@ -45,7 +46,8 @@ export default function VendorDashboard() {
   const [editImages, setEditImages] = useState([null, null, null, null]);
   const [editUploading, setEditUploading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
-  const editFileInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  // single ref whose .current is an array of 4 file-input DOM nodes
+  const editFileInputRefs = useRef([]);
 
   /* ─── Delete ─── */
   const [deletingId, setDeletingId] = useState(null);
@@ -121,7 +123,7 @@ export default function VendorDashboard() {
       next[idx] = null;
       return next;
     });
-    if (addFileInputRefs[idx].current) addFileInputRefs[idx].current.value = "";
+    if (addFileInputRefs.current[idx]) addFileInputRefs.current[idx].value = "";
   }
 
   // ── Add Product Submit ──
@@ -155,7 +157,7 @@ export default function VendorDashboard() {
       toast.success("Product added successfully!");
       setAddForm(EMPTY_ADD);
       setAddImages([null, null, null, null]);
-      addFileInputRefs.forEach((r) => { if (r.current) r.current.value = ""; });
+      addFileInputRefs.current.forEach((el) => { if (el) el.value = ""; });
       fetchProducts();
       setTimeout(() => { setShowAddForm(false); }, 900);
     } catch (err) {
@@ -184,7 +186,7 @@ export default function VendorDashboard() {
       existingUrls[i] ? { file: null, preview: existingUrls[i] } : null
     );
     setEditImages(slots);
-    editFileInputRefs.forEach((r) => { if (r.current) r.current.value = ""; });
+    editFileInputRefs.current.forEach((el) => { if (el) el.value = ""; });
   }
   function handleEditInput(e) {
     const { name, value } = e.target;
@@ -205,7 +207,7 @@ export default function VendorDashboard() {
       next[idx] = null;
       return next;
     });
-    if (editFileInputRefs[idx].current) editFileInputRefs[idx].current.value = "";
+    if (editFileInputRefs.current[idx]) editFileInputRefs.current[idx].value = "";
   }
 
   async function saveEdit(e) {
@@ -257,7 +259,7 @@ export default function VendorDashboard() {
     setEditingProduct(null);
     setEditForm(null);
     setEditImages([null, null, null, null]);
-    editFileInputRefs.forEach((r) => { if (r.current) r.current.value = ""; });
+    editFileInputRefs.current.forEach((el) => { if (el) el.value = ""; });
   }
 
   // ── Delete ──
@@ -408,7 +410,7 @@ export default function VendorDashboard() {
                   {[0, 1, 2, 3].map((idx) => (
                     <div key={idx} className="relative group">
                       <input
-                        ref={addFileInputRefs[idx]}
+                        ref={(el) => (addFileInputRefs.current[idx] = el)}
                         type="file"
                         accept="image/*"
                         className="hidden"
@@ -425,7 +427,7 @@ export default function VendorDashboard() {
                         </div>
                       ) : (
                         <div
-                          onClick={() => addFileInputRefs[idx].current?.click()}
+                          onClick={() => addFileInputRefs.current[idx]?.click()}
                           className="w-full aspect-square rounded-lg border-2 border-dashed border-slate-300 hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer transition text-slate-400 hover:text-purple-500"
                         >
                           <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
@@ -445,7 +447,7 @@ export default function VendorDashboard() {
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-semibold shadow hover:scale-[1.02] transition disabled:opacity-60">
                   {addLoading ? (addUploading ? "Uploading…" : "Saving…") : "Add Product"}
                 </button>
-                <button type="button" onClick={() => { setShowAddForm(false); setAddForm(EMPTY_ADD); setAddImages([null,null,null,null]); addFileInputRefs.forEach(r => { if(r.current) r.current.value=''; }); }}
+                <button type="button" onClick={() => { setShowAddForm(false); setAddForm(EMPTY_ADD); setAddImages([null,null,null,null]); addFileInputRefs.current.forEach(el => { if(el) el.value=''; }); }}
                   className="px-4 py-2 rounded-md border font-medium">
                   Cancel
                 </button>
@@ -568,7 +570,7 @@ export default function VendorDashboard() {
                   {[0, 1, 2, 3].map((idx) => (
                     <div key={idx} className="relative group">
                       <input
-                        ref={editFileInputRefs[idx]}
+                        ref={(el) => (editFileInputRefs.current[idx] = el)}
                         type="file"
                         accept="image/*"
                         className="hidden"
@@ -584,13 +586,13 @@ export default function VendorDashboard() {
                           >✕</button>
                           <button
                             type="button"
-                            onClick={() => editFileInputRefs[idx].current?.click()}
+                            onClick={() => editFileInputRefs.current[idx]?.click()}
                             className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-black/50 text-white text-xs opacity-0 group-hover:opacity-100 transition whitespace-nowrap"
                           >Change</button>
                         </div>
                       ) : (
                         <div
-                          onClick={() => editFileInputRefs[idx].current?.click()}
+                          onClick={() => editFileInputRefs.current[idx]?.click()}
                           className="w-full aspect-square rounded-lg border-2 border-dashed border-slate-300 hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer transition text-slate-400 hover:text-purple-500"
                         >
                           <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>

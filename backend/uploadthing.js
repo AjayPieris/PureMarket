@@ -7,7 +7,7 @@ const f = createUploadthing();
 // Define the allowed file routes
 export const ourFileRouter = {
   // Profile image – max 4 MB, single image
-  imageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+  imageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 4 } })
     .middleware(async ({ req }) => {
       // No auth required at signup time – just allow the upload
       return {};
