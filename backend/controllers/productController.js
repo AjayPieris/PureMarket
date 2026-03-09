@@ -7,7 +7,7 @@ export const addProduct = async (req, res) => {
       return res.status(403).json({ message: "Your account is pending admin approval. You cannot add products yet." });
     }
 
-    const { name, description, price, stock, category, image } = req.body;
+    const { name, description, price, stock, category, images } = req.body;
 
     const product = new Product({
       vendor: req.user._id,
@@ -16,7 +16,7 @@ export const addProduct = async (req, res) => {
       price,
       stock,
       category,
-      image: image || "",   // CDN URL from UploadThing
+      images: Array.isArray(images) ? images.slice(0, 4) : [],   // up to 4 CDN URLs from UploadThing
     });
 
     await product.save();
@@ -67,14 +67,14 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to update this product" });
     }
 
-    const { name, description, price, stock, category, image } = req.body;
+    const { name, description, price, stock, category, images } = req.body;
 
     product.name = name || product.name;
     product.description = description || product.description;
     product.price = price || product.price;
     product.stock = stock || product.stock;
     product.category = category || product.category;
-    if (image !== undefined) product.image = image; // CDN URL from UploadThing
+    if (Array.isArray(images)) product.images = images.slice(0, 4); // up to 4 CDN URLs from UploadThing
 
     await product.save();
     res.json({ message: "Product updated successfully", product });

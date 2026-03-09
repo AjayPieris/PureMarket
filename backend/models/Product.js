@@ -28,8 +28,9 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    image: {
-      type: String, // image filename or URL
+    images: {
+      type: [String], // array of CDN URLs from UploadThing (max 4)
+      default: [],
     },
     isActive: {
       type: Boolean,

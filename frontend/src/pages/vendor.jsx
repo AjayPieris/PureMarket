@@ -32,21 +32,20 @@ export default function VendorDashboard() {
   /* ─── Add Product ─── */
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState(EMPTY_ADD);
-  const [addImageFile, setAddImageFile] = useState(null);
-  const [addImagePreview, setAddImagePreview] = useState("");
+  // up to 4 images: each slot is { file: File|null, preview: string }
+  const [addImages, setAddImages] = useState([null, null, null, null]);
   const [addUploading, setAddUploading] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
-  const addFileInputRef = useRef(null);
+  const addFileInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
   /* ─── Edit Modal ─── */
   const [editingProduct, setEditingProduct] = useState(null);
   const [editForm, setEditForm] = useState(null);
-  const [editImageFile, setEditImageFile] = useState(null);
-  const [editImagePreview, setEditImagePreview] = useState("");
+  // up to 4 images: each slot is { file: File|null, preview: string } or null
+  const [editImages, setEditImages] = useState([null, null, null, null]);
   const [editUploading, setEditUploading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
-
-  const editFileInputRef = useRef(null);
+  const editFileInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
   /* ─── Delete ─── */
   const [deletingId, setDeletingId] = useState(null);
@@ -107,11 +106,22 @@ export default function VendorDashboard() {
     const { name, value } = e.target;
     setAddForm((f) => ({ ...f, [name]: value }));
   }
-  function handleAddImageChange(e) {
+  function handleAddImageChange(e, idx) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setAddImageFile(file);
-    setAddImagePreview(URL.createObjectURL(file));
+    setAddImages((prev) => {
+      const next = [...prev];
+      next[idx] = { file, preview: URL.createObjectURL(file) };
+      return next;
+    });
+  }
+  function clearAddImage(idx) {
+    setAddImages((prev) => {
+      const next = [...prev];
+      next[idx] = null;
+      return next;
+    });
+    if (addFileInputRefs[idx].current) addFileInputRefs[idx].current.value = "";
   }
 
   // ── Add Product Submit ──
@@ -123,11 +133,12 @@ export default function VendorDashboard() {
     }
     setAddLoading(true);
     try {
-      let imageUrl = "";
-      if (addImageFile) {
+      let imageUrls = [];
+      const filesToUpload = addImages.filter(Boolean).map((s) => s.file);
+      if (filesToUpload.length > 0) {
         setAddUploading(true);
-        const res = await uploadFiles("imageUploader", { files: [addImageFile] });
-        imageUrl = res?.[0]?.url || res?.[0]?.ufsUrl || "";
+        const res = await uploadFiles("imageUploader", { files: filesToUpload });
+        imageUrls = res.map((r) => r?.url || r?.ufsUrl || "").filter(Boolean);
         setAddUploading(false);
       }
 
@@ -137,15 +148,14 @@ export default function VendorDashboard() {
         price: parseFloat(addForm.price),
         stock: parseInt(addForm.stock, 10),
         category: addForm.category,
-        image: imageUrl,
+        images: imageUrls,
       };
 
       await axios.post(`${API_BASE}/api/products`, payload, { headers: authHeaders });
       toast.success("Product added successfully!");
       setAddForm(EMPTY_ADD);
-      setAddImageFile(null);
-      setAddImagePreview("");
-      if (addFileInputRef.current) addFileInputRef.current.value = "";
+      setAddImages([null, null, null, null]);
+      addFileInputRefs.forEach((r) => { if (r.current) r.current.value = ""; });
       fetchProducts();
       setTimeout(() => { setShowAddForm(false); }, 900);
     } catch (err) {
@@ -166,32 +176,61 @@ export default function VendorDashboard() {
       category: product.category,
       description: product.description || "",
     });
-    setEditImageFile(null);
-    setEditImagePreview(product.image || "");
-    if (editFileInputRef.current) editFileInputRef.current.value = "";
+    // Pre-populate edit slots from existing images array (or legacy image field)
+    const existingUrls = product.images?.length
+      ? product.images
+      : product.image ? [product.image] : [];
+    const slots = [null, null, null, null].map((_, i) =>
+      existingUrls[i] ? { file: null, preview: existingUrls[i] } : null
+    );
+    setEditImages(slots);
+    editFileInputRefs.forEach((r) => { if (r.current) r.current.value = ""; });
   }
   function handleEditInput(e) {
     const { name, value } = e.target;
     setEditForm((f) => ({ ...f, [name]: value }));
   }
-  function handleEditImageChange(e) {
+  function handleEditImageChange(e, idx) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setEditImageFile(file);
-    setEditImagePreview(URL.createObjectURL(file));
+    setEditImages((prev) => {
+      const next = [...prev];
+      next[idx] = { file, preview: URL.createObjectURL(file) };
+      return next;
+    });
+  }
+  function clearEditImage(idx) {
+    setEditImages((prev) => {
+      const next = [...prev];
+      next[idx] = null;
+      return next;
+    });
+    if (editFileInputRefs[idx].current) editFileInputRefs[idx].current.value = "";
   }
 
   async function saveEdit(e) {
     e.preventDefault();
     setEditLoading(true);
     try {
-      let imageUrl = editingProduct.image || "";
-      if (editImageFile) {
+      // For each slot: if there's a new file upload it, if just a preview URL keep it, if null drop it
+      const newFiles = editImages.filter((s) => s?.file);
+      let uploadedUrls = [];
+      if (newFiles.length > 0) {
         setEditUploading(true);
-        const res = await uploadFiles("imageUploader", { files: [editImageFile] });
-        imageUrl = res?.[0]?.url || res?.[0]?.ufsUrl || "";
+        const res = await uploadFiles("imageUploader", { files: newFiles.map((s) => s.file) });
+        uploadedUrls = res.map((r) => r?.url || r?.ufsUrl || "").filter(Boolean);
         setEditUploading(false);
       }
+
+      // Merge: slot order preserved, new uploads replace file slots
+      let uploadIdx = 0;
+      const imageUrls = editImages
+        .map((s) => {
+          if (!s) return null;
+          if (s.file) return uploadedUrls[uploadIdx++] || null;
+          return s.preview; // existing URL
+        })
+        .filter(Boolean);
 
       const payload = {
         name: editForm.name,
@@ -199,7 +238,7 @@ export default function VendorDashboard() {
         price: parseFloat(editForm.price),
         stock: parseInt(editForm.stock, 10),
         category: editForm.category,
-        image: imageUrl,
+        images: imageUrls,
       };
 
       await axios.put(`${API_BASE}/api/products/${editingProduct._id}`, payload, { headers: authHeaders });
@@ -217,9 +256,8 @@ export default function VendorDashboard() {
   function cancelEdit() {
     setEditingProduct(null);
     setEditForm(null);
-    setEditImageFile(null);
-    setEditImagePreview("");
-    if (editFileInputRef.current) editFileInputRef.current.value = "";
+    setEditImages([null, null, null, null]);
+    editFileInputRefs.forEach((r) => { if (r.current) r.current.value = ""; });
   }
 
   // ── Delete ──
@@ -365,19 +403,39 @@ export default function VendorDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Product Image</label>
-                <div
-                  className="flex flex-col items-center justify-center border border-dashed rounded-lg p-5 cursor-pointer hover:border-purple-400 transition"
-                  onClick={() => addFileInputRef.current?.click()}
-                >
-                  <input ref={addFileInputRef} type="file" accept="image/*" onChange={handleAddImageChange} className="hidden" />
-                  {addImagePreview ? (
-                    <img src={addImagePreview} alt="Preview" className="w-40 h-28 object-cover rounded-md shadow-sm" />
-                  ) : (
-                    <p className="text-sm text-slate-500"><span className="font-medium text-purple-600">Click</span> to select image</p>
-                  )}
-                  {addUploading && <p className="text-xs text-purple-500 mt-2">Uploading image…</p>}
+                <label className="block text-sm font-medium mb-2">Product Images <span className="text-slate-400 font-normal">(up to 4)</span></label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <div key={idx} className="relative group">
+                      <input
+                        ref={addFileInputRefs[idx]}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleAddImageChange(e, idx)}
+                      />
+                      {addImages[idx] ? (
+                        <div className="relative w-full aspect-square rounded-lg overflow-hidden border border-purple-300 shadow-sm">
+                          <img src={addImages[idx].preview} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => clearAddImage(idx)}
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                          >✕</button>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => addFileInputRefs[idx].current?.click()}
+                          className="w-full aspect-square rounded-lg border-2 border-dashed border-slate-300 hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer transition text-slate-400 hover:text-purple-500"
+                        >
+                          <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
+                          <span className="text-xs">Photo {idx + 1}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
+                {addUploading && <p className="text-xs text-purple-500 mt-2">Uploading images…</p>}
               </div>
 
 
@@ -387,7 +445,7 @@ export default function VendorDashboard() {
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-semibold shadow hover:scale-[1.02] transition disabled:opacity-60">
                   {addLoading ? (addUploading ? "Uploading…" : "Saving…") : "Add Product"}
                 </button>
-                <button type="button" onClick={() => { setShowAddForm(false); setAddForm(EMPTY_ADD); setAddImagePreview(""); setAddImageFile(null); }}
+                <button type="button" onClick={() => { setShowAddForm(false); setAddForm(EMPTY_ADD); setAddImages([null,null,null,null]); addFileInputRefs.forEach(r => { if(r.current) r.current.value=''; }); }}
                   className="px-4 py-2 rounded-md border font-medium">
                   Cancel
                 </button>
@@ -424,8 +482,8 @@ export default function VendorDashboard() {
                     <tr key={p._id} className="hover:bg-slate-50 transition">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-4">
-                          {p.image ? (
-                            <img src={p.image} alt={p.name} className="w-16 h-12 object-cover rounded-md" />
+                        {p.images?.length ? (
+                            <img src={p.images[0]} alt={p.name} className="w-16 h-12 object-cover rounded-md" />
                           ) : (
                             <div className="w-16 h-12 rounded-md bg-slate-100 flex items-center justify-center text-xs text-slate-400">No img</div>
                           )}
@@ -505,17 +563,46 @@ export default function VendorDashboard() {
                   className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Image</label>
-                <div className="flex items-center gap-4">
-                  <input ref={editFileInputRef} type="file" accept="image/*" onChange={handleEditImageChange} className="text-sm" />
-                  {editImagePreview && (
-                    <div className="w-32 h-20 rounded-md overflow-hidden border">
-                      <img src={editImagePreview} alt="Edit preview" className="w-full h-full object-cover" />
+                <label className="block text-sm font-medium mb-2">Images <span className="text-slate-400 font-normal">(up to 4)</span></label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <div key={idx} className="relative group">
+                      <input
+                        ref={editFileInputRefs[idx]}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleEditImageChange(e, idx)}
+                      />
+                      {editImages[idx] ? (
+                        <div className="relative w-full aspect-square rounded-lg overflow-hidden border border-purple-300 shadow-sm">
+                          <img src={editImages[idx].preview} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => clearEditImage(idx)}
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                          >✕</button>
+                          <button
+                            type="button"
+                            onClick={() => editFileInputRefs[idx].current?.click()}
+                            className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-black/50 text-white text-xs opacity-0 group-hover:opacity-100 transition whitespace-nowrap"
+                          >Change</button>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => editFileInputRefs[idx].current?.click()}
+                          className="w-full aspect-square rounded-lg border-2 border-dashed border-slate-300 hover:border-purple-400 flex flex-col items-center justify-center cursor-pointer transition text-slate-400 hover:text-purple-500"
+                        >
+                          <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
+                          <span className="text-xs">Photo {idx + 1}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
-                {editUploading && <p className="text-xs text-purple-500 mt-1">Uploading image…</p>}
+                {editUploading && <p className="text-xs text-purple-500 mt-2">Uploading images…</p>}
               </div>
+
 
               <div className="flex items-center gap-3">
                 <button type="submit" disabled={editLoading || editUploading}
