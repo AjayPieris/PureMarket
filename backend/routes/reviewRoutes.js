@@ -21,7 +21,6 @@ router.get("/check-purchase/:productId", protect, checkPurchase);
 router.post(
   "/product/:productId",
   protect,
-  authorizeRoles("customer"),
   addReview
 );
 

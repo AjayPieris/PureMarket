@@ -17,6 +17,7 @@ export default function ProductDetails() {
   const [error, setError] = useState("");
   const [mainImage, setMainImage] = useState("");
   const [buying, setBuying] = useState(false);
+  const [orderQuantity, setOrderQuantity] = useState(1);
   const { addToCart } = useCart();
   const { user, token } = useAuth();
   
@@ -56,7 +57,7 @@ export default function ProductDetails() {
     try {
       const { data } = await axios.post(
         `${API_BASE}/api/products/${id}/buy`,
-        {},
+        { quantity: orderQuantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setProduct(data.product);
@@ -96,6 +97,10 @@ export default function ProductDetails() {
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
+    if (isOwner) {
+      toast.error("You cannot review your own product!");
+      return;
+    }
     if (!user) {
       toast.error("Please login to leave a review");
       return;
@@ -231,6 +236,30 @@ export default function ProductDetails() {
 
             <div className="h-px w-full bg-gray-100 mb-6 mt-auto"></div>
 
+            {/* Quantity Selector */}
+            <div className="mb-6">
+              <label className="block text-sm font-bold text-gray-700 mb-2">Quantity</label>
+              <div className="flex items-center border border-gray-200 rounded-lg w-max bg-white">
+                <button 
+                  onClick={() => setOrderQuantity(prev => Math.max(1, prev - 1))}
+                  disabled={orderQuantity <= 1 || product.stock === 0}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-50 hover:text-purple-600 transition-colors disabled:opacity-30"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+                <div className="w-12 text-center font-bold text-gray-900 border-x border-gray-200 py-2">
+                  {orderQuantity}
+                </div>
+                <button 
+                  onClick={() => setOrderQuantity(prev => Math.min(product.stock, prev + 1))}
+                  disabled={orderQuantity >= product.stock || product.stock === 0}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-50 hover:text-purple-600 transition-colors disabled:opacity-30"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+              </div>
+            </div>
+
             <div className="flex gap-4">
               <button
                 onClick={() => {
@@ -238,8 +267,11 @@ export default function ProductDetails() {
                     toast.error("You cannot buy your own product!");
                     return;
                   }
-                  addToCart(product);
-                  toast.success(`${product.name} added to cart!`);
+                  // Add the total quantity to cart (or multiple increments depending on logic)
+                  for(let i=0; i < orderQuantity; i++) {
+                     addToCart(product);
+                  }
+                  toast.success(`${orderQuantity} x ${product.name} added to cart!`);
                 }}
                 disabled={product.stock === 0 || isOwner}
                 className="flex-[1] h-14 px-6 bg-white border-2 border-purple-600 text-purple-700 text-lg font-bold rounded-xl hover:bg-purple-50 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-white flex items-center justify-center gap-2 whitespace-nowrap"
@@ -305,7 +337,7 @@ export default function ProductDetails() {
           </div>
 
           <div className="mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-            {hasPurchased ? (
+            {hasPurchased || isOwner ? (
               <>
                  <h4 className="font-bold text-gray-900 mb-3">Leave a Review</h4>
                  <form onSubmit={handleSubmitReview} className="space-y-4">

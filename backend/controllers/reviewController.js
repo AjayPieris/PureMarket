@@ -37,6 +37,11 @@ export const addReview = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Prevent vendor from reviewing their own product
+    if (product.vendor.toString() === customerId.toString()) {
+      return res.status(403).json({ message: "You cannot review your own product" });
+    }
+
     // Verify user has purchased this product
     const hasPurchased = await Order.findOne({
       customer: customerId,

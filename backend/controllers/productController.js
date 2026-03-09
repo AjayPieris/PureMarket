@@ -104,14 +104,26 @@ export const deleteProduct = async (req, res) => {
 // 🔹 Buy product instantly
 export const buyProduct = async (req, res) => {
   try {
+    const { quantity = 1 } = req.body;
+    const qty = Number(quantity);
+    
+    if (qty < 1) {
+      return res.status(400).json({ message: "Invalid quantity" });
+    }
+
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    if (product.stock <= 0) {
-      return res.status(400).json({ message: "Out of stock" });
+    // Prevent vendor from buying their own product
+    if (product.vendor.toString() === req.user._id.toString()) {
+      return res.status(403).json({ message: "You cannot buy your own product" });
     }
 
-    product.stock -= 1;
+    if (product.stock < qty) {
+      return res.status(400).json({ message: "Not enough stock available" });
+    }
+
+    product.stock -= qty;
     await product.save();
 
     // Create an Order document to record the purchase
@@ -122,7 +134,7 @@ export const buyProduct = async (req, res) => {
           product: product._id,
           vendor: product.vendor,
           name: product.name,
-          qty: 1,
+          qty: qty,
           price: product.price,
         }
       ],
@@ -133,7 +145,7 @@ export const buyProduct = async (req, res) => {
         country: "Default Country"
       },
       paymentMethod: "COD",
-      totalPrice: product.price,
+      totalPrice: product.price * qty,
       status: "Processing"
     });
 
