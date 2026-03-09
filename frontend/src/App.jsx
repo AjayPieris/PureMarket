@@ -13,6 +13,7 @@ import Admin from "./pages/admin";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ProductDetails from "./pages/ProductDetails";
+import OrderSuccess from "./pages/OrderSuccess";
 
 // NOTE: No BrowserRouter here. It is only in main.jsx.
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
       <Route path="/admin" element={<Admin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/order-success" element={<OrderSuccess />} />
       {/* Aliases and fallback */}
       <Route path="/login" element={<Navigate to="/signin" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />

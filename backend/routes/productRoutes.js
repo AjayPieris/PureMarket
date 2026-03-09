@@ -35,6 +35,6 @@ router.put("/:id", protect, authorizeRoles("vendor"), updateProduct);
 router.delete("/:id", protect, authorizeRoles("vendor"), deleteProduct);
 
 // POST /api/products/:id/buy → Buy product directly
-router.post("/:id/buy", buyProduct);
+router.post("/:id/buy", protect, buyProduct);
 
 export default router;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
@@ -11,23 +11,64 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mainImage, setMainImage] = useState("");
   const [buying, setBuying] = useState(false);
   const { addToCart } = useCart();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   
+  const [reviews, setReviews] = useState([]);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [sortOrder, setSortOrder] = useState("high");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false);
+
   const isOwner = user && product?.vendor && (user._id === product.vendor._id || user._id === product.vendor);
 
+  const fetchReviewsAndPurchaseStatus = async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE}/api/reviews/product/${id}`);
+      setReviews(data);
+      
+      if (user && token) {
+        const { data: purchaseData } = await axios.get(`${API_BASE}/api/reviews/check-purchase/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setHasPurchased(purchaseData.hasPurchased);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleBuyNow = async () => {
+    if (!user || !token) {
+      toast.error("Please login to buy products.");
+      return;
+    }
     if (!product || product.stock <= 0) return;
     setBuying(true);
     try {
-      const { data } = await axios.post(`${API_BASE}/api/products/${id}/buy`);
+      const { data } = await axios.post(
+        `${API_BASE}/api/products/${id}/buy`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setProduct(data.product);
-      toast.success(data.message || "Successfully booked now");
+      
+      // Instead of toast, navigate to success page
+      navigate("/order-success", { 
+        state: { 
+          product,
+          vendorName: product.vendor?.name,
+          vendorEmail: product.vendor?.email 
+        } 
+      });
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to book product");
     } finally {
@@ -49,7 +90,45 @@ export default function ProductDetails() {
       })
       .catch((err) => setError(err.response?.data?.message || "Product not found."))
       .finally(() => setLoading(false));
-  }, [id]);
+
+    fetchReviewsAndPurchaseStatus();
+  }, [id, user, token]);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error("Please login to leave a review");
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      const { data } = await axios.post(
+        `${API_BASE}/api/reviews/product/${id}`,
+        { rating: reviewRating, comment: reviewText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(data.message);
+      setReviewText("");
+      setReviewRating(0);
+      setHoverRating(0);
+      
+      const [reviewsRes, prodRes] = await Promise.all([
+        axios.get(`${API_BASE}/api/reviews/product/${id}`),
+        axios.get(`${API_BASE}/api/products/${id}`)
+      ]);
+      setReviews(reviewsRes.data);
+      setProduct(prodRes.data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const sortedReviews = [...reviews].sort((a, b) => {
+    if (sortOrder === "high") return b.rating - a.rating;
+    return a.rating - b.rating;
+  });
 
   if (loading) {
     return (
@@ -150,11 +229,9 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            <div className="h-px w-full bg-gray-100 mb-6"></div>
+            <div className="h-px w-full bg-gray-100 mb-6 mt-auto"></div>
 
-
-
-            <div className="flex gap-4 mt-auto">
+            <div className="flex gap-4">
               <button
                 onClick={() => {
                   if (isOwner) {
@@ -193,84 +270,124 @@ export default function ProductDetails() {
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
                 )}
-                {buying ? "Booking..." : "Buy Now"}
+                {buying ? "Ordering..." : "Order Now"}
               </button>
             </div>
           </div>
         </div>
 
         {/* Bottom Section: Description & Reviews */}
-        <div className="mt-8 bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:p-10 flex flex-col md:flex-row gap-10">
-          
-          {/* Left Column: Description */}
-          <div className="md:w-1/2 flex flex-col">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-purple-600">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
-              About this product
-            </h3>
-            <div className="prose prose-purple max-w-none text-gray-600 leading-relaxed whitespace-pre-wrap flex-1">
-              {product.description || "No description provided. Experience the quality and detail in this meticulously crafted product."}
+        <div className="mt-10 bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:p-12">
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">Product details</h3>
+          <p className="text-gray-600 leading-relaxed mb-10 whitespace-pre-wrap">
+            {product.description || "No description provided. Experience the quality and detail in this meticulously crafted product."}
+          </p>
+
+          <hr className="my-10 border-gray-100" />
+
+          {/* Reviews Section */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <h3 className="text-2xl font-bold text-gray-900">Customer Reviews</h3>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setSortOrder('high')} 
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${sortOrder === 'high' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                High Rate
+              </button>
+              <button 
+                onClick={() => setSortOrder('low')} 
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${sortOrder === 'low' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                Low Rate
+              </button>
             </div>
           </div>
-          
-          <div className="hidden md:block w-px bg-gray-100 flex-shrink-0"></div>
-          <div className="md:hidden h-px w-full bg-gray-100"></div>
 
-          {/* Right Column: Fake Reviews Filter Block for layout */}
-          <div className="md:w-1/2 flex flex-col">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-500">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-              </svg>
-              Customer Reviews
-            </h3>
-
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 mb-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="text-5xl font-black text-gray-900">{Number(product.rating || 5.0).toFixed(1)}</div>
+          <div className="mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+            {hasPurchased ? (
+              <>
+                 <h4 className="font-bold text-gray-900 mb-3">Leave a Review</h4>
+                 <form onSubmit={handleSubmitReview} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                      <div className="flex text-2xl gap-1">
+                    {[1, 2, 3, 4, 5].map(num => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setReviewRating(num)}
+                        onMouseEnter={() => setHoverRating(num)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="focus:outline-none focus:scale-110 transition-transform"
+                      >
+                        <svg
+                          width="28" height="28" viewBox="0 0 24 24"
+                          fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                          className={`transition-colors duration-200 ${(hoverRating || reviewRating) >= num ? "text-amber-500" : "text-gray-300"}`}
+                        >
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div>
-                  <div className="flex text-amber-500 text-xl mb-1">
-                    {[1,2,3,4,5].map(star => (
-                      <svg key={star} width="22" height="22" viewBox="0 0 24 24" fill="currentColor" className={(product.rating || 5.0) >= star ? "text-amber-500" : "text-gray-300"}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+                  <textarea 
+                    rows={3}
+                    placeholder="Tell others what you think..."
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    className="w-full rounded-lg border-gray-300 border p-3 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                  ></textarea>
+                </div>
+                    <button 
+                      type="submit" 
+                      disabled={submittingReview || reviewRating === 0}
+                      className="px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 disabled:opacity-50 transition"
+                    >
+                      {submittingReview ? "Submitting..." : "Submit Review"}
+                    </button>
+                 </form>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+                <h4 className="font-bold text-gray-900 mb-2">Verified Buyers Only</h4>
+                <p className="text-gray-500">You must purchase this product before you can leave a review.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            {sortedReviews.length === 0 ? (
+              <p className="text-gray-500 text-center py-6">No reviews yet. Be the first to review this product!</p>
+            ) : (
+              sortedReviews.map(review => (
+                <div key={review._id} className="pb-6 border-b border-gray-100 last:border-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-gray-900">{review.customer?.name || "User"}</span>
+                    <span className="text-sm text-gray-500">{new Date(review.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex text-amber-500 text-sm mb-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg
+                        key={star}
+                        width="16" height="16" viewBox="0 0 24 24"
+                        fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        className={review.rating >= star ? "text-amber-500" : "text-gray-300"}
+                      >
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                       </svg>
                     ))}
                   </div>
-                  <div className="text-sm text-gray-500 font-medium">{product.numReviews || 0} Ratings</div>
+                  <p className="text-gray-700 whitespace-pre-wrap">{review.comment}</p>
                 </div>
-              </div>
-
-              {/* Fake Rating Bars */}
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map(stars => (
-                  <div key={stars} className="flex items-center gap-2 text-sm">
-                    <span className="w-12 font-medium text-gray-600 flex items-center justify-end gap-1">
-                      {stars} <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    </span>
-                    <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400 rounded-full" style={{ width: stars === 5 ? '80%' : stars === 4 ? '15%' : '0%' }}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mock highest/lowest review toggle placeholders */}
-            <div className="flex gap-2 mb-6">
-              <button className="px-4 py-2 bg-purple-100 text-purple-700 font-semibold rounded-lg text-sm transition hover:bg-purple-200">
-                Highest Rated
-              </button>
-              <button className="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg text-sm transition hover:bg-gray-200">
-                Lowest Rated
-              </button>
-            </div>
-
-            <div className="text-center text-gray-500 italic py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-              No written reviews yet. Be the first to review this product!
-            </div>
+              ))
+            )}
           </div>
         </div>
       </main>

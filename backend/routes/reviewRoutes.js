@@ -4,6 +4,7 @@ import {
   getReviewsByProduct,
   updateReview,
   deleteReview,
+  checkPurchase
 } from "../controllers/reviewController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
@@ -12,6 +13,9 @@ const router = express.Router();
 
 // Public: Get all reviews for a product
 router.get("/product/:productId", getReviewsByProduct);
+
+// Customer: Check if purchased
+router.get("/check-purchase/:productId", protect, checkPurchase);
 
 // Customer only: Add review for a product (expects productId in URL)
 router.post(

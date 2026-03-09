@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import Order from "../models/Order.js";
 
 // 🔹 Add new product (Vendor only)
 export const addProduct = async (req, res) => {
@@ -113,7 +114,32 @@ export const buyProduct = async (req, res) => {
     product.stock -= 1;
     await product.save();
 
-    res.json({ message: "Successfully booked now", product });
+    // Create an Order document to record the purchase
+    const order = new Order({
+      customer: req.user._id,
+      orderItems: [
+        {
+          product: product._id,
+          vendor: product.vendor,
+          name: product.name,
+          qty: 1,
+          price: product.price,
+        }
+      ],
+      shippingAddress: {
+        address: "Default Address", // In a real app, collect this from frontend
+        city: "Default City",
+        postalCode: "000000",
+        country: "Default Country"
+      },
+      paymentMethod: "COD",
+      totalPrice: product.price,
+      status: "Processing"
+    });
+
+    await order.save();
+
+    res.json({ message: "Order successful! Your product will arrive within 2 days.", product });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
