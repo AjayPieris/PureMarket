@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import About from "../components/About";
 import Card from "../components/productCard";
+import HeroImg from "../assets/Hero.jpg";
 
 export default function Home() {
   return (
@@ -13,22 +14,25 @@ export default function Home() {
       <Navbar />
 
       {/* Hero */}
-      <section className="hero">
-        <h1 className="hero-title">
-          Discover Amazing <span className="accent">Products</span> Today
-        </h1>
-        <p className="hero-sub">
-          Shop from thousands of verified vendors and find exactly what you're
-          looking for
-        </p>
+      <section className="hero" style={{ backgroundImage: `url(${HeroImg})` }}>
+        <div className="hero-overlay" />
+        <div className="hero-content">
+          <h1 className="hero-title hero-anim-title">
+            Discover Amazing <span className="accent">Products</span> Today
+          </h1>
+          <p className="hero-sub hero-anim-sub">
+            Shop from thousands of verified vendors and find exactly what you're
+            looking for
+          </p>
 
-        <div className="hero-ctas">
-          <Link to="/products" className="btn-primary">
-            Browse Products
-          </Link>
-          <Link to="/signup" className="link-plain">
-            Become a Vendor
-          </Link>
+          <div className="hero-ctas hero-anim-ctas">
+            <Link to="/products" className="btn-primary">
+              Browse Products
+            </Link>
+            <Link to="/signup" className="link-plain">
+              Become a Vendor
+            </Link>
+          </div>
         </div>
       </section>
 

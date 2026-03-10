@@ -115,7 +115,7 @@ export default function Checkout() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       
-      <main className="flex-1 container mx-auto px-4 py-12 max-w-6xl">
+      <main className="flex-1 container mx-auto px-4 pt-24 pb-12 max-w-6xl">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Checkout</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">

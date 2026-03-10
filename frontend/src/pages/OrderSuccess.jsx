@@ -22,7 +22,7 @@ export default function OrderSuccess() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <main className="flex-1 max-w-3xl mx-auto px-4 py-16 w-full animate-in fade-in zoom-in duration-500">
+      <main className="flex-1 max-w-3xl mx-auto px-4 pt-24 pb-16 w-full animate-in fade-in zoom-in duration-500">
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 p-8 md:p-12 text-center relative">
           
           <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">

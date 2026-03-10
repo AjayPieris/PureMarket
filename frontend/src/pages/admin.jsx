@@ -193,7 +193,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <Navbar />
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      <main className="max-w-6xl mx-auto px-4 pt-24 pb-12">
         <h1 className="text-3xl font-extrabold mb-8 tracking-tight">Admin Dashboard</h1>
 
         {/* ── Stats ── */}

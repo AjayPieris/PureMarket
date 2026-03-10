@@ -28,7 +28,7 @@ export default function Cart() {
   return (
     <>
       <Navbar />
-      <section className="py-16">
+      <section className="pt-24 pb-16">
         <div className="container mx-auto px-6">
           <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 

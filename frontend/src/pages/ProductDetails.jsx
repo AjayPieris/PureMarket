@@ -152,7 +152,7 @@ export default function ProductDetails() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-10 w-full animate-in fade-in duration-500">
+      <main className="flex-1 max-w-6xl mx-auto px-4 pt-24 pb-10 w-full animate-in fade-in duration-500">
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-100">
           {/* Images Section */}
           <div className="md:w-1/2 p-6 lg:p-10 bg-gray-50 flex flex-col items-center">

@@ -72,7 +72,7 @@ export default function UserDashboard() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 pt-20">
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-10 max-w-6xl">

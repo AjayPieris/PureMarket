@@ -294,7 +294,7 @@ export default function VendorDashboard() {
     <div className="min-h-screen bg-white text-slate-900 antialiased">
       <Navbar />
 
-      <main className="max-w-6xl mx-auto px-4 py-10">
+      <main className="max-w-6xl mx-auto px-4 pt-24 pb-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-extrabold">Vendor Dashboard</h1>
