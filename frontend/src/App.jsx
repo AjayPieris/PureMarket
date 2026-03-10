@@ -16,6 +16,7 @@ import ProductDetails from "./pages/ProductDetails";
 import OrderSuccess from "./pages/OrderSuccess";
 import Checkout from "./pages/Checkout";
 import UserDashboard from "./pages/UserDashboard";
+import VendorOrders from "./pages/VendorOrders";
 
 // NOTE: No BrowserRouter here. It is only in main.jsx.
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/dashboard" element={<UserDashboard />} />
       <Route path="/vendor" element={<Vendor />} />
+      <Route path="/vendor/orders" element={<VendorOrders />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />

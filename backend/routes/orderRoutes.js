@@ -59,7 +59,10 @@ router.get("/vendor/:vendorId", async (req, res) => {
   try {
     const orders = await Order.find({
       "orderItems.vendor": req.params.vendorId,
-    }).populate("customer", "name email");
+    })
+      .sort({ createdAt: -1 })
+      .populate("customer", "name email profileImage")
+      .populate("orderItems.product", "name price images");
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
