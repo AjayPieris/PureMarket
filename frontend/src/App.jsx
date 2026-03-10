@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import ProductDetails from "./pages/ProductDetails";
 import OrderSuccess from "./pages/OrderSuccess";
 import Checkout from "./pages/Checkout";
+import UserDashboard from "./pages/UserDashboard";
 
 // NOTE: No BrowserRouter here. It is only in main.jsx.
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
       <Route path="/signup" element={<Register />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/dashboard" element={<UserDashboard />} />
       <Route path="/vendor" element={<Vendor />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

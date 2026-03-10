@@ -1,6 +1,7 @@
 import express from "express";
 import Order from "../models/Order.js";
 import { protect } from "../middleware/authMiddleware.js";
+import { getMyOrders } from "../controllers/orderController.js";
 const router = express.Router();
 
 // Create order
@@ -25,6 +26,9 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// Get logged-in customer's orders
+router.get("/my", protect, getMyOrders);
 
 // GET /api/orders/vendor/earnings — total earned by the logged-in vendor
 router.get("/vendor/earnings", protect, async (req, res) => {

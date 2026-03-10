@@ -139,10 +139,10 @@ export const buyProduct = async (req, res) => {
         }
       ],
       shippingAddress: {
-        address: "Default Address", // In a real app, collect this from frontend
-        city: "Default City",
-        postalCode: "000000",
-        country: "Default Country"
+        address: req.body.shippingAddress?.address || "Default Address",
+        city: req.body.shippingAddress?.city || "Default City",
+        postalCode: req.body.shippingAddress?.zipCode || req.body.shippingAddress?.postalCode || "000000",
+        country: req.body.shippingAddress?.country || "Default Country"
       },
       paymentMethod: "COD",
       totalPrice: product.price * qty,

@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
     const role = (localStorage.getItem("role") || "").toLowerCase();
     const name = localStorage.getItem("userName") || "";
     const profileImage = localStorage.getItem("profileImage") || "";
+    const userId = localStorage.getItem("userId") || "";
 
     if (!token) {
       setAuth((prev) => ({ ...prev, initialized: true }));
@@ -31,7 +32,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: true,
       token,
       role,
-      user: { name, profileImage },
+      user: { _id: userId, name, profileImage },
       initialized: true,
     });
 
@@ -45,12 +46,14 @@ export function AuthProvider({ children }) {
         if (data.name) localStorage.setItem("userName", data.name);
         localStorage.setItem("profileImage", data.profileImage || "");
         localStorage.setItem("role", (data.role || "").toLowerCase());
+        if (data.id) localStorage.setItem("userId", data.id);
 
         setAuth((prev) => ({
           ...prev,
           role: (data.role || "").toLowerCase(),
           user: {
             ...prev.user,
+            _id: data.id || prev.user?._id || "",
             name: data.name || prev.user?.name || "",
             profileImage: data.profileImage || "",
             email: data.email || "",
@@ -113,11 +116,13 @@ export function AuthProvider({ children }) {
     if (finalRole) localStorage.setItem("role", finalRole);
     if (user?.name) localStorage.setItem("userName", user.name);
     localStorage.setItem("profileImage", user?.profileImage || "");
+    // Store the user ID so isOwner checks work correctly
+    if (user?.id || user?._id) localStorage.setItem("userId", user.id || user._id);
     setAuth({
       isAuthenticated: true,
       token,
       role: finalRole,
-      user: user || null,
+      user: user ? { ...user, _id: user.id || user._id } : null,
       initialized: true,
     });
   }
@@ -127,6 +132,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("role");
     localStorage.removeItem("userName");
     localStorage.removeItem("profileImage");
+    localStorage.removeItem("userId");
     setAuth({
       isAuthenticated: false,
       token: "",

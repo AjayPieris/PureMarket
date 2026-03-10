@@ -100,7 +100,9 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
           const id = product._id;
           const isFavorite = favorites.includes(id);
           const vendorName = product.vendor?.name || "Unknown";
-          const isOwner = user && product.vendor && (user._id === product.vendor._id || user._id === product.vendor);
+          const userId = user?._id?.toString();
+          const vendorId = (product.vendor?._id || product.vendor)?.toString();
+          const isOwner = !!(userId && vendorId && userId === vendorId);
 
           return (
             <div key={id} className="card product-card card-3d">
@@ -169,20 +171,22 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (isOwner) {
-                          toast.error("You cannot buy your own product!");
-                          return;
-                        }
                         addToCart(product);
                         toast.success(`${product.name} added to cart!`);
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cart-icon">
-                        <circle cx="9" cy="21" r="1" />
-                        <circle cx="20" cy="21" r="1" />
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                      </svg>
-                      <span className="btn-text">Add</span>
+                      {isOwner ? (
+                        <span className="btn-text">Your Product</span>
+                      ) : (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cart-icon">
+                            <circle cx="9" cy="21" r="1" />
+                            <circle cx="20" cy="21" r="1" />
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                          </svg>
+                          <span className="btn-text">{product.stock === 0 ? "Out of Stock" : "Add"}</span>
+                        </>
+                      )}
                     </button>
                     
                     <div className="flex items-center justify-end w-full mt-1">
