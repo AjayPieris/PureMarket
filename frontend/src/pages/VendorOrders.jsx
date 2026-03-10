@@ -35,10 +35,12 @@ export default function VendorOrders() {
       await axios.put(
         `${API_BASE}/api/orders/${orderId}/vendor-status`,
         { status: "Delivered" },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setOrders((prev) =>
-        prev.map((o) => (o._id === orderId ? { ...o, status: "Delivered" } : o))
+        prev.map((o) =>
+          o._id === orderId ? { ...o, status: "Delivered" } : o,
+        ),
       );
       toast.success("Order marked as Delivered!");
     } catch (err) {
@@ -48,13 +50,22 @@ export default function VendorOrders() {
     }
   }
 
-  const filtered = filter === "all" ? orders : orders.filter((o) => o.status === filter);
+  const filtered =
+    filter === "all"
+      ? orders
+      : filter === "Pending"
+        ? orders.filter(
+            (o) => o.status !== "Delivered" && o.status !== "Cancelled",
+          )
+        : orders.filter((o) => o.status === filter);
 
-  const pendingCount = orders.filter((o) => o.status !== "Delivered").length;
+  const pendingCount = orders.filter(
+    (o) => o.status !== "Delivered" && o.status !== "Cancelled",
+  ).length;
   const deliveredCount = orders.filter((o) => o.status === "Delivered").length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 pt-20">
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 pt-24 pb-10 max-w-5xl">
@@ -67,11 +78,19 @@ export default function VendorOrders() {
             >
               ← Back to Dashboard
             </Link>
-            <h1 className="text-2xl font-extrabold text-gray-900">📦 Store Orders</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900">
+              📦 Store Orders
+            </h1>
             <p className="text-sm text-gray-500 mt-1">
-              {orders.length} total order{orders.length !== 1 ? "s" : ""} &middot;{" "}
-              <span className="text-amber-600 font-semibold">{pendingCount} pending</span> &middot;{" "}
-              <span className="text-green-600 font-semibold">{deliveredCount} delivered</span>
+              {orders.length} total order{orders.length !== 1 ? "s" : ""}{" "}
+              &middot;{" "}
+              <span className="text-amber-600 font-semibold">
+                {pendingCount} pending
+              </span>{" "}
+              &middot;{" "}
+              <span className="text-green-600 font-semibold">
+                {deliveredCount} delivered
+              </span>
             </p>
           </div>
         </div>
@@ -109,7 +128,9 @@ export default function VendorOrders() {
               📦
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {filter === "all" ? "No orders yet" : `No ${filter.toLowerCase()} orders`}
+              {filter === "all"
+                ? "No orders yet"
+                : `No ${filter.toLowerCase()} orders`}
             </h3>
             <p className="text-gray-500">
               {filter === "all"
@@ -118,126 +139,158 @@ export default function VendorOrders() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filtered.map((order) => {
-              const myItems = (order.orderItems || []).filter(
-                (it) =>
-                  (it.vendor?.toString?.() ||
-                    it.vendor?._id?.toString?.() ||
-                    it.vendor) === vendorId
-              );
+          <div className="space-y-6">
+            {(() => {
+              // Group orders by customer
+              const grouped = {};
+              filtered.forEach((order) => {
+                const custId =
+                  order.customer?._id || order.customer || "unknown";
+                if (!grouped[custId]) {
+                  grouped[custId] = { customer: order.customer, orders: [] };
+                }
+                grouped[custId].orders.push(order);
+              });
 
-              return (
+              return Object.entries(grouped).map(([custId, group]) => (
                 <div
-                  key={order._id}
-                  className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all overflow-hidden"
+                  key={custId}
+                  className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden"
                 >
-                  {/* Order Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 bg-gray-50/60 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                      {/* Customer Photo */}
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                        {order.customer?.profileImage ? (
-                          <img
-                            src={order.customer.profileImage}
-                            alt={order.customer.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          order.customer?.name?.charAt(0)?.toUpperCase() || "U"
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900 text-sm">
-                          {order.customer?.name || "Unknown Customer"}
-                        </p>
-                        <p className="text-xs text-gray-400">{order.customer?.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono text-gray-400">
-                        #{order._id?.slice(-8).toUpperCase()}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {new Date(order.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Order Body */}
-                  <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                    {/* Product Items */}
-                    <div className="flex-1">
-                      <div className="flex flex-wrap gap-3">
-                        {myItems.map((item, idx) => {
-                          const productImg =
-                            item.product?.images?.[0] || null;
-                          return (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2 border border-gray-100"
-                            >
-                              {/* Product Photo */}
-                              {productImg ? (
-                                <img
-                                  src={productImg}
-                                  alt={item.name}
-                                  className="w-11 h-11 rounded-lg object-cover shrink-0"
-                                />
-                              ) : (
-                                <div className="w-11 h-11 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs shrink-0">
-                                  No img
-                                </div>
-                              )}
-                              <div>
-                                <p className="text-sm font-medium text-gray-800">
-                                  {item.name || "Product"}
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                  Qty: <span className="font-semibold text-gray-600">{item.qty}</span>
-                                  &nbsp;&middot;&nbsp;
-                                  <span className="font-bold text-gray-800">
-                                    ${Number(item.price * item.qty).toFixed(2)}
-                                  </span>
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Status & Action */}
-                    <div className="flex flex-col items-end gap-2 shrink-0">
-                      <span
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-                          order.status === "Delivered"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}
-                      >
-                        {order.status === "Delivered" ? "✅ Delivered" : "⏳ Pending"}
-                      </span>
-                      {order.status !== "Delivered" && (
-                        <button
-                          onClick={() => handleMarkDelivered(order._id)}
-                          disabled={updatingOrderId === order._id}
-                          className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold shadow hover:scale-[1.03] transition disabled:opacity-60"
-                        >
-                          {updatingOrderId === order._id
-                            ? "Updating…"
-                            : "Mark Delivered"}
-                        </button>
+                  {/* Customer Header — shown once */}
+                  <div className="flex items-center gap-3 px-6 py-4 bg-gray-50/60 border-b border-gray-100">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                      {group.customer?.profileImage ? (
+                        <img
+                          src={group.customer.profileImage}
+                          alt={group.customer.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        group.customer?.name?.charAt(0)?.toUpperCase() || "U"
                       )}
                     </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">
+                        {group.customer?.name || "Unknown Customer"}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {group.customer?.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* All orders from this customer */}
+                  <div className="divide-y divide-gray-100">
+                    {group.orders.map((order) => {
+                      const myItems = (order.orderItems || []).filter((it) => {
+                        const v =
+                          it.vendor?._id?.toString?.() ||
+                          it.vendor?.toString?.() ||
+                          it.vendor;
+                        return v === vendorId;
+                      });
+
+                      return (
+                        <div
+                          key={order._id}
+                          className="px-6 py-4 hover:bg-gray-50/40 transition-colors"
+                        >
+                          {/* Order meta */}
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-mono text-gray-400">
+                                #{order._id?.slice(-8).toUpperCase()}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {new Date(order.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  },
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                  order.status === "Delivered"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-amber-100 text-amber-700"
+                                }`}
+                              >
+                                {order.status === "Delivered"
+                                  ? "✅ Delivered"
+                                  : "⏳ Pending"}
+                              </span>
+                              {order.status !== "Delivered" && (
+                                <button
+                                  onClick={() => handleMarkDelivered(order._id)}
+                                  disabled={updatingOrderId === order._id}
+                                  className="px-3 py-1 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold shadow hover:scale-[1.03] transition disabled:opacity-60"
+                                >
+                                  {updatingOrderId === order._id
+                                    ? "Updating…"
+                                    : "Mark Delivered"}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Product items */}
+                          <div className="flex flex-wrap gap-3">
+                            {myItems.map((item, idx) => {
+                              const productImg =
+                                item.product?.images?.[0] || null;
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2 border border-gray-100"
+                                >
+                                  {productImg ? (
+                                    <img
+                                      src={productImg}
+                                      alt={item.name}
+                                      className="w-11 h-11 rounded-lg object-cover shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-11 h-11 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs shrink-0">
+                                      No img
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                      {item.product?.name ||
+                                        item.name ||
+                                        "Product"}
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                      Qty:{" "}
+                                      <span className="font-semibold text-gray-600">
+                                        {item.qty}
+                                      </span>
+                                      &nbsp;&middot;&nbsp;
+                                      <span className="font-bold text-gray-800">
+                                        $
+                                        {Number(item.price * item.qty).toFixed(
+                                          2,
+                                        )}
+                                      </span>
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              );
-            })}
+              ));
+            })()}
           </div>
         )}
       </main>

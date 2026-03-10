@@ -1,11 +1,48 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "../page_style/home.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import About from "../components/About";
 import Card from "../components/productCard";
-import HeroImg from "../assets/Hero.jpg";
+import HeroVideo from "../assets/Hero.mp4";
+import MidVideo from "../assets/Mid.mp4";
+
+function CountUp({ end, duration = 2000, suffix = "" }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const start = 0;
+          const startTime = performance.now();
+          const step = (now) => {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(eased * (end - start) + start));
+            if (progress < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.3 },
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [end, duration]);
+
+  return (
+    <span ref={ref}>
+      {count.toLocaleString()}
+      {suffix}
+    </span>
+  );
+}
 
 export default function Home() {
   return (
@@ -14,7 +51,15 @@ export default function Home() {
       <Navbar />
 
       {/* Hero */}
-      <section className="hero" style={{ backgroundImage: `url(${HeroImg})` }}>
+      <section className="hero">
+        <video
+          className="hero-video"
+          src={HeroVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
         <div className="hero-overlay" />
         <div className="hero-content">
           <h1 className="hero-title hero-anim-title">
@@ -49,7 +94,9 @@ export default function Home() {
               <path d="M4 7v10l8 4 8-4V7" stroke="#7C3AED" strokeWidth="1.6" />
             </svg>
           </span>
-          <div className="stat-value">10,000+</div>
+          <div className="stat-value">
+            <CountUp end={10000} suffix="+" />
+          </div>
           <div className="stat-label">Products</div>
         </div>
 
@@ -68,7 +115,9 @@ export default function Home() {
               />
             </svg>
           </span>
-          <div className="stat-value">1,000+</div>
+          <div className="stat-value">
+            <CountUp end={1000} suffix="+" />
+          </div>
           <div className="stat-label">Vendors</div>
         </div>
 
@@ -96,7 +145,9 @@ export default function Home() {
               />
             </svg>
           </span>
-          <div className="stat-value">50,000+</div>
+          <div className="stat-value">
+            <CountUp end={50000} suffix="+" />
+          </div>
           <div className="stat-label">Happy Customers</div>
         </div>
       </section>
@@ -105,14 +156,26 @@ export default function Home() {
       <h2 className="heading">Featured Products</h2>
       <p className="subheading">Check out our most popular items</p>
       <Card />
-      <div className="text-center mt-4 mb-16">
-        <a
-          href="/products"
-          className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 hover:-translate-y-1 transition-all duration-300"
-        >
-          View All Products
-        </a>
-      </div>
+      <section className="mid-video-section">
+        <video
+          className="mid-video"
+          src={MidVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+        <div className="mid-video-overlay" />
+        <div className="mid-video-content">
+          <h2 className="mid-video-title">Explore Our Full Collection</h2>
+          <p className="mid-video-sub">
+            Thousands of products from verified vendors
+          </p>
+          <a href="/products" className="mid-video-btn">
+            View All Products
+          </a>
+        </div>
+      </section>
       <Footer />
     </div>
   );

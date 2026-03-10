@@ -16,17 +16,23 @@ header {
 .hero {
   position: relative;
   width: 100%;
-  min-height: 540px;
-  margin: 0 0 24px;
-  padding: 160px 20px 90px;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
   text-align: center;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
 }
 
 /* Semi-transparent dark overlay for text readability */
@@ -37,13 +43,13 @@ header {
       rgba(55, 28, 120, 0.62) 0%,
       rgba(100, 60, 180, 0.45) 60%,
       rgba(180, 140, 230, 0.22) 100%);
-  z-index: 0;
+  z-index: 1;
 }
 
 /* Content sits above overlay */
 .hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 900px;
   margin: 0 auto;
 }
@@ -81,6 +87,78 @@ header {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+}
+
+/* ====== MID VIDEO SECTION ====== */
+.mid-video-section {
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 40px auto 0;
+  border-radius: 20px;
+}
+
+.mid-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.mid-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
+}
+
+.mid-video-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.mid-video-title {
+  font-size: clamp(24px, 4vw, 42px);
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 12px;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+}
+
+.mid-video-sub {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(14px, 2vw, 18px);
+  margin: 0 0 28px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mid-video-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.mid-video-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* ====== ANIMATIONS ====== */

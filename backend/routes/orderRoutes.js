@@ -62,7 +62,8 @@ router.get("/vendor/:vendorId", async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .populate("customer", "name email profileImage")
-      .populate("orderItems.product", "name price images");
+      .populate("orderItems.product", "name price images")
+      .populate("orderItems.vendor", "name email profileImage");
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -78,15 +79,19 @@ router.put("/:id/vendor-status", protect, async (req, res) => {
 
     // Verify this vendor has items in the order
     const isVendorInOrder = order.orderItems.some(
-      (item) => item.vendor.toString() === vendorId
+      (item) => item.vendor.toString() === vendorId,
     );
     if (!isVendorInOrder) {
-      return res.status(403).json({ message: "Not authorized to update this order" });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this order" });
     }
 
     const { status } = req.body;
     if (!["Delivered"].includes(status)) {
-      return res.status(400).json({ message: "Vendors can only mark orders as Delivered" });
+      return res
+        .status(400)
+        .json({ message: "Vendors can only mark orders as Delivered" });
     }
 
     order.status = status;

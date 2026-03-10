@@ -12,25 +12,45 @@ export const createOrder = async (req, res) => {
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
       return res.status(400).json({ message: "Order items are required" });
     }
-    if (!shippingAddress?.address || !shippingAddress?.city || !shippingAddress?.postalCode || !shippingAddress?.country) {
-      return res.status(400).json({ message: "Complete shipping address is required" });
+    if (
+      !shippingAddress?.address ||
+      !shippingAddress?.city ||
+      !shippingAddress?.postalCode ||
+      !shippingAddress?.country
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Complete shipping address is required" });
     }
 
     const productIds = orderItems.map((i) => i.product);
-    const products = await Product.find({ _id: { $in: productIds }, isActive: true });
+    const products = await Product.find({
+      _id: { $in: productIds },
+      isActive: true,
+    });
 
     if (products.length !== orderItems.length) {
-      return res.status(400).json({ message: "One or more products are invalid or inactive" });
+      return res
+        .status(400)
+        .json({ message: "One or more products are invalid or inactive" });
     }
 
     const normalizedItems = [];
     for (const item of orderItems) {
-      const productDoc = products.find((p) => p._id.toString() === item.product.toString());
-      if (!productDoc) return res.status(400).json({ message: "Invalid product in cart" });
+      const productDoc = products.find(
+        (p) => p._id.toString() === item.product.toString(),
+      );
+      if (!productDoc)
+        return res.status(400).json({ message: "Invalid product in cart" });
 
-      if (item.qty <= 0) return res.status(400).json({ message: "Quantity must be greater than 0" });
+      if (item.qty <= 0)
+        return res
+          .status(400)
+          .json({ message: "Quantity must be greater than 0" });
       if (productDoc.stock < item.qty) {
-        return res.status(400).json({ message: `Insufficient stock for ${productDoc.name}` });
+        return res
+          .status(400)
+          .json({ message: `Insufficient stock for ${productDoc.name}` });
       }
 
       normalizedItems.push({
@@ -42,7 +62,10 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    const totalPrice = normalizedItems.reduce((acc, it) => acc + it.price * it.qty, 0);
+    const totalPrice = normalizedItems.reduce(
+      (acc, it) => acc + it.price * it.qty,
+      0,
+    );
 
     const order = new Order({
       customer: customerId,
@@ -58,14 +81,14 @@ export const createOrder = async (req, res) => {
     // Decrement stock
     await Promise.all(
       normalizedItems.map((it) =>
-        Product.updateOne({ _id: it.product }, { $inc: { stock: -it.qty } })
-      )
+        Product.updateOne({ _id: it.product }, { $inc: { stock: -it.qty } }),
+      ),
     );
 
     const populated = await Order.findById(order._id)
       .populate("customer", "name email")
-      .populate("orderItems.product", "name price")
-      .populate("orderItems.vendor", "name email");
+      .populate("orderItems.product", "name price images")
+      .populate("orderItems.vendor", "name email profileImage");
 
     res.status(201).json({ message: "Order created", order: populated });
   } catch (err) {
@@ -81,8 +104,8 @@ export const getMyOrders = async (req, res) => {
 
     const orders = await Order.find({ customer: customerId })
       .sort("-createdAt")
-      .populate("orderItems.product", "name price")
-      .populate("orderItems.vendor", "name email");
+      .populate("orderItems.product", "name price images")
+      .populate("orderItems.vendor", "name email profileImage");
 
     res.json(orders);
   } catch (err) {
@@ -95,8 +118,8 @@ export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate("customer", "name email")
-      .populate("orderItems.product", "name price")
-      .populate("orderItems.vendor", "name email");
+      .populate("orderItems.product", "name price images")
+      .populate("orderItems.vendor", "name email profileImage");
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
@@ -106,11 +129,13 @@ export const getOrderById = async (req, res) => {
     const isOwner = order.customer?.toString?.() === userId;
     const isAdmin = role === "admin";
     const isVendorInOrder = order.orderItems.some(
-      (it) => it.vendor?.toString?.() === userId
+      (it) => it.vendor?.toString?.() === userId,
     );
 
     if (!isOwner && !isAdmin && !isVendorInOrder) {
-      return res.status(403).json({ message: "Not authorized to view this order" });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to view this order" });
     }
 
     res.json(order);
@@ -140,8 +165,8 @@ export const getVendorOrders = async (req, res) => {
 
     const orders = await Order.find({ "orderItems.vendor": vendorId })
       .sort("-createdAt")
-      .populate("customer", "name email")
-      .populate("orderItems.product", "name price");
+      .populate("customer", "name email profileImage")
+      .populate("orderItems.product", "name price images");
 
     res.json(orders);
   } catch (err) {
@@ -153,7 +178,13 @@ export const getVendorOrders = async (req, res) => {
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const allowed = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+    const allowed = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+    ];
     if (!allowed.includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
@@ -165,8 +196,8 @@ export const updateOrderStatus = async (req, res) => {
     if (status === "Cancelled" && order.status !== "Cancelled") {
       await Promise.all(
         (order.orderItems || []).map((it) =>
-          Product.updateOne({ _id: it.product }, { $inc: { stock: it.qty } })
-        )
+          Product.updateOne({ _id: it.product }, { $inc: { stock: it.qty } }),
+        ),
       );
     }
 
@@ -174,8 +205,8 @@ export const updateOrderStatus = async (req, res) => {
     await order.save();
 
     const populated = await Order.findById(order._id)
-      .populate("customer", "name email")
-      .populate("orderItems.product", "name price")
+      .populate("customer", "name email profileImage")
+      .populate("orderItems.product", "name price images")
       .populate("orderItems.vendor", "name email");
 
     res.json({ message: "Order status updated", order: populated });
