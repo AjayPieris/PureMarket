@@ -14,7 +14,7 @@ const CATEGORIES = ["Electronics", "Fashion", "Sports", "Home", "Beauty", "Food"
 const EMPTY_ADD = { name: "", price: "", stock: "", rating: "5.0", category: "Electronics", description: "" };
 
 export default function VendorDashboard() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const authHeaders = { Authorization: `Bearer ${token}` };
 
   /* ─── Approval state ─── */
@@ -27,6 +27,11 @@ export default function VendorDashboard() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [totalEarning, setTotalEarning] = useState(null);
+
+  /* ─── Store Orders state ─── */
+  const [vendorOrders, setVendorOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
 
   /* ─── Add Product ─── */
@@ -83,7 +88,40 @@ export default function VendorDashboard() {
       .get(`${API_BASE}/api/orders/vendor/earnings`, { headers })
       .then(({ data }) => setTotalEarning(data.totalEarning ?? 0))
       .catch(() => setTotalEarning(0));
-  }, [fetchProducts, token]);
+
+    // Fetch vendor orders
+    const vendorId = user?._id || localStorage.getItem("userId");
+    if (vendorId) {
+      setLoadingOrders(true);
+      axios
+        .get(`${API_BASE}/api/orders/vendor/${vendorId}`, { headers })
+        .then(({ data }) => setVendorOrders(data))
+        .catch(() => setVendorOrders([]))
+        .finally(() => setLoadingOrders(false));
+    } else {
+      setLoadingOrders(false);
+    }
+  }, [fetchProducts, token, user]);
+
+  // Mark order as Delivered
+  async function handleMarkDelivered(orderId) {
+    setUpdatingOrderId(orderId);
+    try {
+      await axios.put(
+        `${API_BASE}/api/orders/${orderId}/vendor-status`,
+        { status: "Delivered" },
+        { headers: authHeaders }
+      );
+      setVendorOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: "Delivered" } : o))
+      );
+      toast.success("Order marked as Delivered!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update order.");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  }
 
   async function handleStoreLinkSubmit(e) {
     e.preventDefault();
@@ -299,9 +337,12 @@ export default function VendorDashboard() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-extrabold">Vendor Dashboard</h1>
           <div className="flex items-center gap-3">
-            <Link to="/products" className="hidden sm:inline-block text-sm font-semibold px-4 py-2 border rounded-md hover:bg-slate-50">
-              View Store
-            </Link>
+            <button
+              onClick={() => document.getElementById("store-orders")?.scrollIntoView({ behavior: "smooth" })}
+              className="hidden sm:inline-block text-sm font-semibold px-4 py-2 border rounded-md hover:bg-slate-50"
+            >
+              📦 View Orders
+            </button>
             {isApproved && (
               <button
                 onClick={() => setShowAddForm((s) => !s)}
@@ -528,6 +569,92 @@ export default function VendorDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </section>
+
+        {/* ── Store Orders ── */}
+        <section className="mb-14">
+          <h2 className="text-xl font-bold mb-4">📦 Store Orders</h2>
+
+          {loadingOrders ? (
+            <div className="text-center py-12 text-slate-400">Loading orders…</div>
+          ) : vendorOrders.length === 0 ? (
+            <div className="text-center py-12 text-slate-400 border rounded-lg">
+              No orders yet. When customers buy your products they will appear here.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {vendorOrders.map((order) => {
+                const vendorId = user?._id || localStorage.getItem("userId");
+                const myItems = (order.orderItems || []).filter(
+                  (it) => (it.vendor?.toString?.() || it.vendor?._id?.toString?.() || it.vendor) === vendorId
+                );
+                return (
+                  <div
+                    key={order._id}
+                    className="rounded-xl border bg-white p-5 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:items-start gap-4"
+                  >
+                    {/* Left: order info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xs font-mono text-slate-400">
+                          #{order._id?.slice(-8).toUpperCase()}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          {new Date(order.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-700 mb-2">
+                        👤 {order.customer?.name || "Unknown Customer"}
+                        <span className="font-normal text-slate-400 ml-1">({order.customer?.email})</span>
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {myItems.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2"
+                          >
+                            <span className="text-sm font-medium text-slate-700">
+                              {item.name || "Product"}
+                            </span>
+                            <span className="text-xs text-slate-400">×{item.qty}</span>
+                            <span className="text-sm font-bold text-slate-900">
+                              ${Number(item.price * item.qty).toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: status + action */}
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          order.status === "Delivered"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {order.status === "Delivered" ? "✅ Delivered" : "⏳ Pending"}
+                      </span>
+                      {order.status !== "Delivered" && (
+                        <button
+                          onClick={() => handleMarkDelivered(order._id)}
+                          disabled={updatingOrderId === order._id}
+                          className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold shadow hover:scale-[1.03] transition disabled:opacity-60"
+                        >
+                          {updatingOrderId === order._id ? "Updating…" : "Mark Delivered"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
