@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import Navbar from "../components/navbar";
+import Navbar from "../components/Navbar";
 import Card from "../components/productCard";
-import Footer from "../components/footer";
+import Footer from "../components/Footer";
 
 export default function Product() {
   const [searchQuery, setSearchQuery] = useState("");
