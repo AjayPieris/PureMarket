@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import "../page_style/login.css";
+import "../page_style/auth.css";
 import { toast } from "react-toastify";
 import logo from "../assets/logo.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+
+const BG_IMAGE =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuDydt4uI7y7lr1W8idxf8IGYG6BEb0PCSUHWMwUqvXSF3bIVXzmwHeC3utzXQS4ksKJZVSTKELKBdV1icHxUTEfyjU4pxMrygMZEPzZmK7lnTD_aNEJ2i0ftCdYMHR_WFKsA7P_6z5M5W0y7QkP3SfTGUvxEIf9j1TYHq7X6TeSOBAONlF8kiuIy7pJNyt4CGQs45pI5CnBh8rTyALMidlS8SuwEEnWW_JQx2S3HMpFJ9IDN0J34_OkZ8Wb0iFxW7Y8pdSTHAerEbI";
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -21,20 +24,11 @@ export default function ResetPassword() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (form.password !== form.confirm) {
-      toast.error("Passwords do not match.");
-      return;
-    }
-    if (form.password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
-      return;
-    }
+    if (form.password !== form.confirm) { toast.error("Passwords do not match."); return; }
+    if (form.password.length < 6) { toast.error("Password must be at least 6 characters."); return; }
     setLoading(true);
     try {
-      const { data } = await axios.post(
-        `${API_BASE}/api/auth/reset-password/${token}`,
-        { password: form.password }
-      );
+      const { data } = await axios.post(`${API_BASE}/api/auth/reset-password/${token}`, { password: form.password });
       toast.success(data.message || "Password reset!");
       setTimeout(() => navigate("/signin", { replace: true }), 2000);
     } catch (err) {
@@ -45,86 +39,96 @@ export default function ResetPassword() {
   }
 
   return (
-    <main className="log-page" role="main">
-      <header className="log-header">
-        <img src={logo} alt="PureMarket" className="log-logo" />
-        <h1 className="log-title">New Password</h1>
-        <p className="log-subtitle">Choose a strong password for your account</p>
-      </header>
+    <div className="auth-page">
+      <div className="auth-bg">
+        <img src={BG_IMAGE} alt="" aria-hidden="true" />
+        <div className="auth-bg-overlay" />
+      </div>
 
-      <form className="log-card" onSubmit={handleSubmit} noValidate>
+      <main className="auth-main">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: 480 }}>
+          <div className="auth-card">
+            <div className="auth-glow-tl" />
+            <div className="auth-glow-br" />
 
-        {/* New password */}
-        <label className="log-label center" htmlFor="rp-password">New password</label>
-        <div className="log-field">
-          <span className="log-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="10" width="16" height="10" rx="2" stroke="#9AA3AF" strokeWidth="1.5" />
-              <path d="M8 10V8a4 4 0 118 0v2" stroke="#9AA3AF" strokeWidth="1.5" />
-            </svg>
-          </span>
-          <input
-            id="rp-password"
-            name="password"
-            type={showPw ? "text" : "password"}
-            placeholder="Min. 6 characters"
-            value={form.password}
-            onChange={handleChange}
-            className="log-input"
-            autoComplete="new-password"
-            required
-          />
-          <button
-            type="button"
-            onClick={() => setShowPw((v) => !v)}
-            style={{
-              position: "absolute", right: "12px", top: "50%",
-              transform: "translateY(-50%)", background: "none",
-              border: "none", cursor: "pointer", color: "#9aa3af",
-              padding: 0, fontSize: "12px", lineHeight: 1,
-            }}
-            aria-label={showPw ? "Hide password" : "Show password"}
-          >
-            {showPw ? "Hide" : "Show"}
-          </button>
+            <div className="auth-brand">
+              <img src={logo} alt="PureMarket" className="auth-brand-logo" />
+              <p className="auth-brand-name">PureMarket</p>
+              <p className="auth-brand-sub">Choose a strong new password</p>
+            </div>
+
+            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+              <div className="auth-field-group">
+                <label className="auth-label" htmlFor="rp-password">New Password</label>
+                <input
+                  id="rp-password"
+                  name="password"
+                  type={showPw ? "text" : "password"}
+                  placeholder="Min. 6 characters"
+                  value={form.password}
+                  onChange={handleChange}
+                  className="auth-input"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+
+              <div className="auth-field-group">
+                <label className="auth-label" htmlFor="rp-confirm">Confirm Password</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    id="rp-confirm"
+                    name="confirm"
+                    type={showPw ? "text" : "password"}
+                    placeholder="Repeat password"
+                    value={form.confirm}
+                    onChange={handleChange}
+                    className="auth-input"
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    style={{
+                      position: "absolute", right: 14, top: "50%",
+                      transform: "translateY(-50%)", background: "none",
+                      border: "none", cursor: "pointer",
+                      color: "rgba(204,195,215,0.6)", fontSize: 12, fontWeight: 600,
+                      fontFamily: "Manrope, sans-serif", padding: 0,
+                    }}
+                    aria-label={showPw ? "Hide" : "Show"}
+                  >
+                    {showPw ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" className="auth-btn" disabled={loading}>
+                {loading ? (
+                  <span className="auth-spinner" />
+                ) : (
+                  <>
+                    <span>Reset Password</span>
+                    <span className="material-symbols-outlined auth-btn-arrow">arrow_forward</span>
+                  </>
+                )}
+              </button>
+
+              <p className="auth-muted">
+                <Link className="auth-link" to="/signin">Back to Sign In</Link>
+              </p>
+            </form>
+          </div>
+
+          <a className="auth-back" href="/">
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
+            Back to Home
+          </a>
         </div>
+      </main>
 
-        {/* Confirm password */}
-        <label className="log-label center" htmlFor="rp-confirm">Confirm password</label>
-        <div className="log-field">
-          <span className="log-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="10" width="16" height="10" rx="2" stroke="#9AA3AF" strokeWidth="1.5" />
-              <path d="M8 10V8a4 4 0 118 0v2" stroke="#9AA3AF" strokeWidth="1.5" />
-            </svg>
-          </span>
-          <input
-            id="rp-confirm"
-            name="confirm"
-            type={showPw ? "text" : "password"}
-            placeholder="Repeat password"
-            value={form.confirm}
-            onChange={handleChange}
-            className="log-input"
-            autoComplete="new-password"
-            required
-          />
-        </div>
-
-
-
-        <button type="submit" className="log-btn" disabled={loading}>
-          {loading ? "Saving…" : "Reset Password"}
-        </button>
-
-        <p className="log-muted">
-          <Link className="log-link" to="/signin">Back to Sign In</Link>
-        </p>
-      </form>
-
-      <a className="home-back" href="/">
-        <span className="home-arrow" aria-hidden="true">←</span> Back to Home
-      </a>
-    </main>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+    </div>
   );
 }

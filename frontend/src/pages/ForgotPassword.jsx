@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import "../page_style/login.css";
+import "../page_style/auth.css";
 import { toast } from "react-toastify";
 import logo from "../assets/logo.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+
+const BG_IMAGE =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuDydt4uI7y7lr1W8idxf8IGYG6BEb0PCSUHWMwUqvXSF3bIVXzmwHeC3utzXQS4ksKJZVSTKELKBdV1icHxUTEfyjU4pxMrygMZEPzZmK7lnTD_aNEJ2i0ftCdYMHR_WFKsA7P_6z5M5W0y7QkP3SfTGUvxEIf9j1TYHq7X6TeSOBAONlF8kiuIy7pJNyt4CGQs45pI5CnBh8rTyALMidlS8SuwEEnWW_JQx2S3HMpFJ9IDN0J34_OkZ8Wb0iFxW7Y8pdSTHAerEbI";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -25,49 +28,69 @@ export default function ForgotPassword() {
   }
 
   return (
-    <main className="log-page" role="main">
-      <header className="log-header">
-        <img src={logo} alt="PureMarket" className="log-logo" />
-        <h1 className="log-title">Forgot Password?</h1>
-        <p className="log-subtitle">Enter your email and we'll send a reset link</p>
-      </header>
+    <div className="auth-page">
+      <div className="auth-bg">
+        <img src={BG_IMAGE} alt="" aria-hidden="true" />
+        <div className="auth-bg-overlay" />
+      </div>
 
-      <form className="log-card" onSubmit={handleSubmit} noValidate>
-        <label className="log-label center" htmlFor="fp-email">Email address</label>
-        <div className="log-field">
-          <span className="log-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M3 6.75A1.75 1.75 0 014.75 5h14.5A1.75 1.75 0 0121 6.75v10.5A1.75 1.75 0 0119.25 19H4.75A1.75 1.75 0 013 17.25V6.75z" stroke="#9AA3AF" strokeWidth="1.5" />
-              <path d="M4 7l8 5 8-5" stroke="#9AA3AF" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </span>
-          <input
-            id="fp-email"
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="log-input"
-            autoComplete="email"
-            required
-          />
+      <main className="auth-main">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: 480 }}>
+          <div className="auth-card">
+            <div className="auth-glow-tl" />
+            <div className="auth-glow-br" />
+
+            <div className="auth-brand">
+              <img src={logo} alt="PureMarket" className="auth-brand-logo" />
+              <p className="auth-brand-name">PureMarket</p>
+              <p className="auth-brand-sub">Forgot Password?</p>
+            </div>
+
+            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+              <div className="auth-field-group">
+                <label className="auth-label" htmlFor="fp-email">Email Address</label>
+                <input
+                  id="fp-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="auth-input"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              <button type="submit" className="auth-btn" disabled={loading}>
+                {loading ? (
+                  <span className="auth-spinner" />
+                ) : (
+                  <>
+                    <span>Send Reset Link</span>
+                    <span className="material-symbols-outlined auth-btn-arrow">arrow_forward</span>
+                  </>
+                )}
+              </button>
+
+              <p className="auth-muted">
+                Remember your password?{" "}
+                <Link className="auth-link" to="/signin">Sign in</Link>
+              </p>
+            </form>
+          </div>
+
+          <a className="auth-back" href="/">
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
+            Back to Home
+          </a>
         </div>
+      </main>
 
+      <footer className="auth-footer">
+        <p>© 2024 PureMarket — The Ethereal Boutique</p>
+      </footer>
 
-
-        <button type="submit" className="log-btn" disabled={loading}>
-          {loading ? "Sending…" : "Send Reset Link"}
-        </button>
-
-        <p className="log-muted">
-          Remember your password?{" "}
-          <Link className="log-link" to="/signin">Sign in</Link>
-        </p>
-      </form>
-
-      <a className="home-back" href="/">
-        <span className="home-arrow" aria-hidden="true">←</span> Back to Home
-      </a>
-    </main>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+    </div>
   );
 }

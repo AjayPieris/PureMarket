@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
-import "../page_style/login.css";
+import "../page_style/auth.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import logo from "../assets/logo.png";
+
+const BG_IMAGE =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuDydt4uI7y7lr1W8idxf8IGYG6BEb0PCSUHWMwUqvXSF3bIVXzmwHeC3utzXQS4ksKJZVSTKELKBdV1icHxUTEfyjU4pxMrygMZEPzZmK7lnTD_aNEJ2i0ftCdYMHR_WFKsA7P_6z5M5W0y7QkP3SfTGUvxEIf9j1TYHq7X6TeSOBAONlF8kiuIy7pJNyt4CGQs45pI5CnBh8rTyALMidlS8SuwEEnWW_JQx2S3HMpFJ9IDN0J34_OkZ8Wb0iFxW7Y8pdSTHAerEbI";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -12,12 +15,10 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Show toast if redirected here after being blocked
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("blocked") === "1") {
       toast.error("Your account has been blocked by the admin.");
-      // Clean the URL without reloading
       window.history.replaceState({}, "", "/login");
     }
   }, []);
@@ -30,107 +31,124 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-
     try {
       const base = import.meta.env.VITE_API_BASE || "http://localhost:5000";
       const { data } = await axios.post(`${base}/api/auth/login`, form);
-
-      // Expecting { token, user: { role: 'admin'|'vendor'|'user', ... } }
       const { token, user } = data || {};
       if (!token) throw new Error("Token missing in response");
       const role = (user?.role || "").toLowerCase();
-
-      // Update auth context (persists token/role)
       login({ token, user, role });
-
-      // Role-based redirect
       switch (role) {
-        case "admin":
-          navigate("/admin", { replace: true });
-          break;
-        case "vendor":
-          navigate("/vendor", { replace: true });
-          break;
-        case "user":
-        default:
-          navigate("/dashboard", { replace: true });
-          break;
+        case "admin":  navigate("/admin", { replace: true }); break;
+        case "vendor": navigate("/vendor", { replace: true }); break;
+        default:       navigate("/dashboard", { replace: true });
       }
     } catch (err) {
-      const message = err.response?.data?.message || err.message || "Login failed";
-      toast.error(message);
+      toast.error(err.response?.data?.message || err.message || "Login failed");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="log-page" role="main">
-      <header className="log-header">
-        <img src={logo} alt="PureMarket" className="log-logo" />
-        <h1 className="log-title">Welcome Back</h1>
-        <p className="log-subtitle">Sign in to your account</p>
-      </header>
+    <div className="auth-page">
+      {/* Background */}
+      <div className="auth-bg">
+        <img src={BG_IMAGE} alt="" aria-hidden="true" />
+        <div className="auth-bg-overlay" />
+      </div>
 
-      <form className="log-card" onSubmit={handleSubmit} noValidate>
-        <label className="log-label center" htmlFor="email">Email</label>
-        <div className="log-field">
-          <span className="log-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M3 6.75A1.75 1.75 0 014.75 5h14.5A1.75 1.75 0 0121 6.75v10.5A1.75 1.75 0 0119.25 19H4.75A1.75 1.75 0 013 17.25V6.75z" stroke="#9AA3AF" strokeWidth="1.5" />
-              <path d="M4 7l8 5 8-5" stroke="#9AA3AF" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </span>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="your@email.com"
-            value={form.email}
-            onChange={handleChange}
-            className="log-input"
-            autoComplete="email"
-            required
-          />
+      <main className="auth-main">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: 480 }}>
+          <div className="auth-card">
+            {/* Decorative glows */}
+            <div className="auth-glow-tl" />
+            <div className="auth-glow-br" />
+
+            {/* Brand */}
+            <div className="auth-brand">
+              <img src={logo} alt="PureMarket" className="auth-brand-logo" />
+              <p className="auth-brand-name">PureMarket</p>
+              <p className="auth-brand-sub">Welcome back — sign in to continue</p>
+            </div>
+
+            {/* Form */}
+            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+              {/* Email */}
+              <div className="auth-field-group">
+                <label className="auth-label" htmlFor="lp-email">Email Address</label>
+                <input
+                  id="lp-email"
+                  name="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="auth-input"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              {/* Password */}
+              <div className="auth-field-group">
+                <label className="auth-label" htmlFor="lp-password">Secure Password</label>
+                <input
+                  id="lp-password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••••••"
+                  value={form.password}
+                  onChange={handleChange}
+                  className="auth-input"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+
+              {/* Forgot */}
+              <a className="auth-forgot" href="/forgot-password">Forgot password?</a>
+
+              {/* Submit */}
+              <button type="submit" className="auth-btn" disabled={loading}>
+                {loading ? (
+                  <span className="auth-spinner" />
+                ) : (
+                  <>
+                    <span>Sign In</span>
+                    <span className="material-symbols-outlined auth-btn-arrow">arrow_forward</span>
+                  </>
+                )}
+              </button>
+
+              <p className="auth-muted">
+                Don't have an account?{" "}
+                <a className="auth-link" href="/signup">Create one</a>
+              </p>
+            </form>
+          </div>
+
+          <a className="auth-back" href="/">
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
+            Back to Home
+          </a>
         </div>
+      </main>
 
-        <label className="log-label center" htmlFor="password">Password</label>
-        <div className="log-field">
-          <span className="log-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="10" width="16" height="10" rx="2" stroke="#9AA3AF" strokeWidth="1.5" />
-              <path d="M8 10V8a4 4 0 118 0v2" stroke="#9AA3AF" strokeWidth="1.5" />
-            </svg>
-          </span>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Enter your password"
-            value={form.password}
-            onChange={handleChange}
-            className="log-input"
-            autoComplete="current-password"
-            required
-          />
+      <footer className="auth-footer">
+        <p>© 2026 PureMarket</p>
+        <div className="auth-footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Policy</a>
         </div>
-        <div style={{ textAlign: "right", marginTop: "6px" }}>
-          <a className="log-forgot" href="/forgot-password">Forgot password?</a>
-        </div>
+      </footer>
 
-
-        <button type="submit" className="log-btn" disabled={loading}>
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
-
-        <p className="log-muted">
-          Don't have an account? <a className="log-link" href="/signup">Sign up</a>
-        </p>
-      </form>
-
-      <a className="home-back" href="/">
-        <span className="home-arrow" aria-hidden="true">←</span> Back to Home
-      </a>
-    </main>
+      {/* Material Symbols */}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+      />
+    </div>
   );
 }
