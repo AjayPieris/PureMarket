@@ -16,14 +16,11 @@
 
 /* Header */
 .log-header{ text-align:center; }
-.log-logo{
-  width:52px;height:52px;
-  display:grid;place-items:center;
-  margin:0 auto 12px;
-  border-radius:12px;
-  color:#fff;
-  background:linear-gradient(145deg,#8b5cf6,#6d28d9);
-  box-shadow:0 8px 18px rgba(109,40,217,.18);
+.log-logo {
+  height: 64px;
+  width: auto;
+  display: block;
+  margin: 0 auto 12px;
 }
 .log-title{
   margin:0;

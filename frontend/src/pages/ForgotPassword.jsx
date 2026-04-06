@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import "../page_style/login.css";
 import { toast } from "react-toastify";
+import logo from "../assets/logo.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
@@ -26,12 +27,7 @@ export default function ForgotPassword() {
   return (
     <main className="log-page" role="main">
       <header className="log-header">
-        <div className="log-logo" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2l7 4v8l-7 4-7-4V6l7-4z" stroke="white" strokeWidth="1.5" />
-            <path d="M12 2v8l7 4M12 10L5 14" stroke="white" strokeWidth="1.1" opacity=".7" />
-          </svg>
-        </div>
+        <img src={logo} alt="PureMarket" className="log-logo" />
         <h1 className="log-title">Forgot Password?</h1>
         <p className="log-subtitle">Enter your email and we'll send a reset link</p>
       </header>

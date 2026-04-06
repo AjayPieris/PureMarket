@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { uploadFiles } from "../utils/uploadthing";
 import "../page_style/register.css";
 import { toast } from "react-toastify";
+import logo from "../assets/logo.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
@@ -78,12 +79,7 @@ export default function Register() {
   return (
     <main className="reg-page" role="main">
       <header className="reg-header">
-        <div className="reg-logo" aria-hidden>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2l7 4v8l-7 4-7-4V6l7-4z" stroke="white" strokeWidth="1.5" />
-            <path d="M12 2v8l7 4M12 10L5 14" stroke="white" strokeWidth="1.1" opacity=".7" />
-          </svg>
-        </div>
+        <img src={logo} alt="PureMarket" className="reg-logo" />
         <h1 className="reg-title">Create Account</h1>
         <p className="reg-subtitle">Join MarketPlace today</p>
       </header>

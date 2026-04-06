@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/logo.png";
 
 function Navbar() {
   const location = useLocation();
@@ -56,12 +57,7 @@ function Navbar() {
     <header className="home-nav">
       <div className="nav-inner">
         <Link to="/" className="brand">
-          <span className="logo-pill" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2l7 4v8l-7 4-7-4V6l7-4z" stroke="white" strokeWidth="1.6" />
-              <path d="M12 2v8l7 4M12 10L5 14" stroke="white" strokeWidth="1.2" opacity=".7" />
-            </svg>
-          </span>
+          <img src={logo} alt="PureMarket Logo" className="app-logo-img" />
           <span className="brand-name">PureMarket</span>
         </Link>
 
