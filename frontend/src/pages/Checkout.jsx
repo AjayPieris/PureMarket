@@ -176,7 +176,7 @@ export default function Checkout() {
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h4>
                       <p className="text-xs text-gray-500 mb-1">by {item.vendor?.name || item.vendor}</p>
-                      <p className="text-sm font-bold text-gray-900">${Number(item.price).toFixed(2)}</p>
+                      <p className="text-sm font-bold text-gray-900">LKR {Number(item.price).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
@@ -185,7 +185,7 @@ export default function Checkout() {
               <div className="space-y-3 border-t border-gray-100 pt-6 mb-6">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal ({items.length} items)</span>
-                  <span>${calculateTotal()}</span>
+                  <span>LKR {calculateTotal()}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
@@ -193,7 +193,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-gray-900 font-bold text-lg pt-3 border-t border-gray-100">
                   <span>Total</span>
-                  <span>${calculateTotal()}</span>
+                  <span>LKR {calculateTotal()}</span>
                 </div>
               </div>
 
@@ -208,7 +208,7 @@ export default function Checkout() {
                 ) : (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 )}
-                {loading ? "Processing..." : `Pay $${calculateTotal()}`}
+                {loading ? "Processing..." : `Pay LKR ${calculateTotal()}`}
               </button>
               <p className="text-xs text-center text-gray-500 mt-4 flex items-center justify-center gap-1.5">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>

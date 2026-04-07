@@ -319,7 +319,7 @@ export default function VendorDashboard() {
             { label: "Total Products", value: loadingProducts ? "…" : products.length },
             { label: "Total Stock", value: loadingProducts ? "…" : products.reduce((s, p) => s + (p.stock || 0), 0) },
             { label: "Categories", value: loadingProducts ? "…" : new Set(products.map((p) => p.category)).size },
-            { label: "Total Earning", value: totalEarning === null ? "…" : `$${Number(totalEarning).toFixed(2)}` },
+            { label: "Total Earning", value: totalEarning === null ? "…" : `LKR ${Number(totalEarning).toFixed(2)}` },
           ].map((s, i) => (
             <div key={i} className="rounded-xl bg-white border p-5 shadow-sm hover:shadow-md transition">
               <p className="text-sm text-slate-500">{s.label}</p>
@@ -382,7 +382,7 @@ export default function VendorDashboard() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Price ($)</label>
+                  <label className="block text-sm font-medium mb-1">Price (LKR)</label>
                   <input name="price" type="number" step="0.01" min="0" value={addForm.price} onChange={handleAddInput}
                     className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300" required />
                 </div>
@@ -506,7 +506,7 @@ export default function VendorDashboard() {
                         </div>
                       </td>
                       <td className="px-4 py-3">{p.category}</td>
-                      <td className="px-4 py-3 font-semibold">${Number(p.price).toFixed(2)}</td>
+                      <td className="px-4 py-3 font-semibold">LKR {Number(p.price).toFixed(2)}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.stock < 5 ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"}`}>
                           {p.stock}
@@ -552,7 +552,7 @@ export default function VendorDashboard() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Price ($)</label>
+                  <label className="block text-sm font-medium mb-1">Price (LKR)</label>
                   <input name="price" type="number" step="0.01" min="0" value={editForm.price} onChange={handleEditInput}
                     className="w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300" required />
                 </div>

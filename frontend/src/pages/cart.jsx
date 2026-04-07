@@ -101,7 +101,7 @@ export default function Cart() {
                       </button>
 
                       <p className="font-bold text-blue-600 text-xl">
-                        ${Number(group.price).toFixed(2)}
+                        LKR {Number(group.price).toFixed(2)}
                       </p>
                       
                       {/* Quantity Selector */}
@@ -152,7 +152,7 @@ export default function Cart() {
                 <div className="border-t pt-4">
                   <div className="flex justify-between mb-2">
                     <span>Subtotal</span>
-                    <span className="font-semibold">${total.toFixed(2)}</span>
+                    <span className="font-semibold">LKR {total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between mb-2">
                     <span>Shipping</span>
@@ -161,7 +161,7 @@ export default function Cart() {
                   <div className="flex justify-between border-t pt-4 mb-4">
                     <span className="text-lg font-bold">Total</span>
                     <span className="text-2xl font-bold text-blue-600">
-                      ${total.toFixed(2)}
+                      LKR {total.toFixed(2)}
                     </span>
                   </div>
                   <a

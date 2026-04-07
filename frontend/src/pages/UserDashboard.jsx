@@ -144,7 +144,7 @@ export default function UserDashboard() {
               </svg>
             </div>
             <p className="text-3xl font-extrabold text-gray-900">
-              ${stats.totalSpent.toFixed(2)}
+              LKR {stats.totalSpent.toFixed(2)}
             </p>
             <p className="text-sm text-gray-500 mt-1">Total Spent</p>
           </div>
@@ -278,7 +278,7 @@ export default function UserDashboard() {
                           {order.status}
                         </span>
                         <span className="text-lg font-extrabold text-gray-900">
-                          ${Number(order.totalPrice).toFixed(2)}
+                          LKR {Number(order.totalPrice).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -335,7 +335,7 @@ export default function UserDashboard() {
                                 ×{item.qty}
                               </span>
                               <span className="text-sm font-bold text-gray-900">
-                                ${Number(item.price * item.qty).toFixed(2)}
+                                LKR {Number(item.price * item.qty).toFixed(2)}
                               </span>
                             </div>
                           </div>
@@ -421,7 +421,7 @@ export default function UserDashboard() {
                         by {product.vendor?.name || "Vendor"}
                       </p>
                       <p className="text-sm font-bold text-purple-600 mt-1">
-                        ${Number(product.price).toFixed(2)}
+                        LKR {Number(product.price).toFixed(2)}
                       </p>
                     </div>
                   </Link>

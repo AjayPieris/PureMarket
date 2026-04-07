@@ -273,10 +273,7 @@ export default function VendorOrders() {
                                       </span>
                                       &nbsp;&middot;&nbsp;
                                       <span className="font-bold text-gray-800">
-                                        $
-                                        {Number(item.price * item.qty).toFixed(
-                                          2,
-                                        )}
+                                        LKR {Number(item.price * item.qty).toFixed(2)}
                                       </span>
                                     </p>
                                   </div>

@@ -215,7 +215,7 @@ export default function ProductDetails() {
             
             <div className="flex items-end gap-4 mb-6">
               <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
-                ${Number(product.price).toFixed(2)}
+                LKR {Number(product.price).toFixed(2)}
               </div>
               <div className={`text-sm font-semibold mb-1.5 px-3 py-1 rounded-full ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 {product.stock > 0 ? `✓ ${product.stock} in stock` : "✕ Out of stock"}

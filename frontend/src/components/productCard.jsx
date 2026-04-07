@@ -157,7 +157,7 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
                 <div className="flex items-end justify-between mt-4">
                   <div className="price-container">
                     <p className="text-xl font-bold" style={{ color: "hsl(var(--primary))" }}>
-                      ${Number(product.price).toFixed(2)}
+                      LKR {Number(product.price).toFixed(2)}
                     </p>
                     <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
                       {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}

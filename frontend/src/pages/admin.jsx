@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                 <StatCard icon="👥" label="Total Users"    value={statsLoading ? "…" : (stats?.totalUsers ?? 0).toLocaleString()}    sub="Registered customers" />
                 <StatCard icon="🏪" label="Total Vendors"  value={statsLoading ? "…" : (stats?.totalVendors ?? 0).toLocaleString()}  sub="Active shops" />
                 <StatCard icon="📦" label="Total Products" value={statsLoading ? "…" : (stats?.totalProducts ?? 0).toLocaleString()} sub="Listed items" />
-                <StatCard icon="💰" label="Platform Revenue" value={statsLoading ? "…" : `$${Number(stats?.platformRevenue ?? 0).toFixed(2)}`} sub="All-time earnings" />
+                <StatCard icon="💰" label="Platform Revenue" value={statsLoading ? "…" : `LKR ${Number(stats?.platformRevenue ?? 0).toFixed(2)}`} sub="All-time earnings" />
               </div>
 
               {/* Quick access */}
