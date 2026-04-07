@@ -373,10 +373,38 @@ body {
   color: #6366f1;
 }
 
+.product-vendor-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.vendor-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.vendor-avatar-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .product-vendor {
   font-size: 0.8rem;
   color: var(--text-secondary);
-  margin: 0 0 14px;
+  margin: 0;
 }
 
 /* ── Footer (price + actions) ── */

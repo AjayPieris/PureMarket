@@ -148,7 +148,16 @@ function ProductCard({ product, isFavorite, toggleFavorite, addToCart, isOwner }
           <h3 className="product-title">{product.name}</h3>
         </Link>
 
-        <p className="product-vendor">by {vendorName}</p>
+        <div className="product-vendor-info">
+          <p className="product-vendor">by {vendorName}</p>
+          {product.vendor?.profileImage ? (
+            <img src={product.vendor.profileImage} alt={vendorName} className="vendor-avatar" />
+          ) : (
+            <div className="vendor-avatar-fallback">
+              {vendorName.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
 
         <div className="product-footer">
           <div className="price-block">

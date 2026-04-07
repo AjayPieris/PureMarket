@@ -28,6 +28,7 @@ export default function ProductDetails() {
   const [sortOrder, setSortOrder] = useState("high");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [hasPurchased, setHasPurchased] = useState(false);
+  const [isHoveringImage, setIsHoveringImage] = useState(false);
 
   const isOwner = user && product?.vendor && (user._id === product.vendor._id || user._id === product.vendor);
 
@@ -82,6 +83,23 @@ export default function ProductDetails() {
 
     fetchReviewsAndPurchaseStatus();
   }, [id, user, token]);
+
+  // Auto-cycle images every 2.5s (pause on hover)
+  useEffect(() => {
+    if (!product || !product.images || product.images.length <= 1) return;
+    
+    if (!isHoveringImage) {
+      const interval = setInterval(() => {
+        setMainImage((prev) => {
+          const currentIndex = product.images.indexOf(prev);
+          if (currentIndex === -1) return product.images[0];
+          const nextIndex = (currentIndex + 1) % product.images.length;
+          return product.images[nextIndex];
+        });
+      }, 2500);
+      return () => clearInterval(interval);
+    }
+  }, [product, isHoveringImage]);
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -156,9 +174,13 @@ export default function ProductDetails() {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-100">
           {/* Images Section */}
           <div className="md:w-1/2 p-6 lg:p-10 bg-gray-50 flex flex-col items-center">
-            <div className="w-full aspect-square bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm mb-6 flex items-center justify-center relative">
+            <div 
+              className="w-full aspect-square bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm mb-6 flex items-center justify-center relative group"
+              onMouseEnter={() => setIsHoveringImage(true)}
+              onMouseLeave={() => setIsHoveringImage(false)}
+            >
               {mainImage ? (
-                <img src={mainImage} className="w-full h-full object-cover" alt={product.name} />
+                <img src={mainImage} className="w-full h-full object-cover transition-opacity duration-500" alt={product.name} />
               ) : (
                 <div className="text-gray-400 flex flex-col items-center">
                   <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -192,7 +214,16 @@ export default function ProductDetails() {
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2 leading-tight">
               {product.name}
             </h1>
-            <p className="text-gray-500 mb-2 font-medium">by <span className="text-purple-600 border-b border-purple-200 pb-0.5">{product.vendor?.name || "Unknown Vendor"}</span></p>
+            <div className="flex items-center gap-3 mb-4">
+              <p className="text-gray-500 font-medium text-lg">by <span className="text-purple-600 border-b border-purple-200 pb-0.5">{product.vendor?.name || "Unknown Vendor"}</span></p>
+              {product.vendor?.profileImage ? (
+                <img src={product.vendor.profileImage} alt={product.vendor?.name} className="w-8 h-8 rounded-full object-cover border border-gray-200 shadow-sm" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                  {(product.vendor?.name || "U").charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
 
             <div className="flex items-center mb-8">
               <div className="flex text-amber-500 text-lg">
