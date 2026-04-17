@@ -6,7 +6,64 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 
+import product1 from "../assets/product1.png";
+import product2 from "../assets/product2.png";
+import product3 from "../assets/product3.png";
+import product4 from "../assets/product4.png";
+
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+
+/* ── Sample products shown when backend is unavailable ── */
+const SAMPLE_PRODUCTS = [
+  {
+    _id: "sample-1",
+    name: "Wireless Noise-Cancel Headphones",
+    description: "Premium over-ear headphones with active noise cancellation, 30hr battery life, and studio-quality sound.",
+    price: 12500,
+    stock: 15,
+    rating: 4.8,
+    numReviews: 124,
+    category: "Electronics",
+    images: [product1],
+    vendor: { _id: "demo-vendor", name: "TechZone Store" },
+  },
+  {
+    _id: "sample-2",
+    name: "Premium Running Sneakers",
+    description: "Lightweight, breathable running shoes with cloud-cushion sole technology. Perfect for daily training.",
+    price: 8750,
+    stock: 30,
+    rating: 4.6,
+    numReviews: 89,
+    category: "Fashion",
+    images: [product2],
+    vendor: { _id: "demo-vendor", name: "SportsPro LK" },
+  },
+  {
+    _id: "sample-3",
+    name: "Luxury Smart Watch",
+    description: "Stainless steel smartwatch with AMOLED display, health tracking, GPS, and 7-day battery life.",
+    price: 21000,
+    stock: 8,
+    rating: 4.9,
+    numReviews: 210,
+    category: "Electronics",
+    images: [product3],
+    vendor: { _id: "demo-vendor", name: "GadgetWorld" },
+  },
+  {
+    _id: "sample-4",
+    name: "Premium Leather Handbag",
+    description: "Handcrafted genuine leather bag with spacious interior, gold-tone hardware, and adjustable strap.",
+    price: 15990,
+    stock: 5,
+    rating: 4.7,
+    numReviews: 67,
+    category: "Fashion",
+    images: [product4],
+    vendor: { _id: "demo-vendor", name: "LuxeFashion" },
+  },
+];
 
 /* ── Reusable single product card with image cycling ── */
 function ProductCard({ product, isFavorite, toggleFavorite, addToCart, isOwner }) {
@@ -234,8 +291,18 @@ export default function ProductCardList({ searchQuery = "", category = "", sort 
     setLoading(true);
     axios
       .get(`${API_BASE}/api/products`)
-      .then(({ data }) => setAllProducts(data))
-      .catch((err) => setError(err.response?.data?.message || "Failed to load products."))
+      .then(({ data }) => {
+        // If API returns real products use them, otherwise fall back to samples
+        if (Array.isArray(data) && data.length > 0) {
+          setAllProducts(data);
+        } else {
+          setAllProducts(SAMPLE_PRODUCTS);
+        }
+      })
+      .catch(() => {
+        // Backend unavailable — show sample products for demo/Vercel preview
+        setAllProducts(SAMPLE_PRODUCTS);
+      })
       .finally(() => setLoading(false));
   }, []);
 
