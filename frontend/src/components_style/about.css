@@ -159,20 +159,26 @@
 }
 
 /* Extra responsiveness */
-@media (max-width: 520px) {
+@media (max-width: 640px) {
   .about-container {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
     gap: 14px;
   }
 
   .about-card {
-    min-height: 150px;
-    padding: 14px;
+    min-height: auto;
+    padding: 20px 16px;
+    flex-direction: row;
+    text-align: left;
+    align-items: flex-start;
+    gap: 16px;
   }
 
   .icon-box {
+    flex-shrink: 0;
     width: 48px;
     height: 48px;
+    margin: 0;
   }
 
   .icon {
@@ -180,10 +186,11 @@
   }
 
   .about-card h3 {
-    font-size: 15px;
+    font-size: 16px;
+    margin: 0 0 4px;
   }
 
   .about-card p {
-    font-size: 12.5px;
+    font-size: 13px;
   }
 }

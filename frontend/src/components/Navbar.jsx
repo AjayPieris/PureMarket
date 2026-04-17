@@ -11,6 +11,7 @@ function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user, role } = useAuth();
   const [dropOpen, setDropOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropRef = useRef(null);
 
   let cartCount = 0;
@@ -41,6 +42,7 @@ function Navbar() {
 
   const handleLogout = () => {
     setDropOpen(false);
+    setMobileMenuOpen(false);
     logout();
     navigate("/signin", { replace: true });
   };
@@ -56,12 +58,13 @@ function Navbar() {
   return (
     <header className="home-nav">
       <div className="nav-inner">
-        <Link to="/" className="brand">
+        <Link to="/" className="brand" onClick={() => setMobileMenuOpen(false)}>
           <img src={logo} alt="PureMarket Logo" className="app-logo-img" />
           <span className="brand-name">PureMarket</span>
         </Link>
 
-        <div className="nav-right">
+        {/* ── Desktop Right Side ── */}
+        <div className="nav-right desktop-only">
           {showProductsLink && (
             <Link to="/products" className="nav-link">
               Products
@@ -177,7 +180,79 @@ function Navbar() {
             </Link>
           )}
         </div>
+
+        {/* ── Mobile Hamburger Toggle ── */}
+        <button
+          className="mobile-menu-toggle"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          aria-label="Toggle mobile menu"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {mobileMenuOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </>
+            )}
+          </svg>
+        </button>
       </div>
+
+      {/* ── Mobile Menu Overlay ── */}
+      {mobileMenuOpen && (
+        <div className="mobile-menu-overlay">
+          <div className="mobile-menu-content">
+            {showProductsLink && (
+              <Link to="/products" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                Products
+              </Link>
+            )}
+            
+            {showCartLink && (
+              <Link to="/cart" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                🛒 Cart {cartCount > 0 && <span className="mobile-cart-badge">{cartCount}</span>}
+              </Link>
+            )}
+
+            {isAuthenticated ? (
+              <>
+                <div className="mobile-divider" />
+                <div className="mobile-user-info">
+                  {profileImage ? (
+                    <img src={profileImage} alt={userName} className="mobile-avatar-img" />
+                  ) : (
+                    <span className="mobile-avatar-initials">{initials}</span>
+                  )}
+                  <div>
+                    <div className="mobile-user-name">{userName || "User"}</div>
+                    <div className="mobile-user-role">{role || "member"}</div>
+                  </div>
+                </div>
+                
+                <Link to={dashboardLink} className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                <Link to="/account" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  Manage Account
+                </Link>
+                <button type="button" className="mobile-nav-link danger text-left w-full" onClick={handleLogout}>
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link to="/signin" className="btn-login w-full text-center items-center justify-center mt-4" onClick={() => setMobileMenuOpen(false)}>
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

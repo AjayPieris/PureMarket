@@ -399,8 +399,9 @@ header {
 
 @media (max-width: 600px) {
   .hero {
-    min-height: 380px;
-    padding: 80px 16px 56px;
+    height: auto;
+    min-height: 100svh;
+    padding: 120px 16px 56px;
   }
 
   .hero-ctas {
@@ -413,7 +414,9 @@ header {
   }
 
   .stats {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: 1fr; /* Force 1 column on small phones to stop overflow */
+    gap: 16px;
+    padding: 0 16px;
   }
 
   .stat-card.small.center {
@@ -422,8 +425,8 @@ header {
   }
 
   .stat-icon {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
   }
 
   .stat-label {
@@ -433,9 +436,36 @@ header {
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-
   .btn-primary,
   .stat-card.small.center {
     transition: none;
+  }
+}
+
+/* ── Mid-Video Section Mobile ── */
+@media (max-width: 768px) {
+  .mid-video-section {
+    width: 95%;
+    min-height: 260px;
+    border-radius: 14px;
+    margin: 24px auto 0;
+  }
+
+  .mid-video-content {
+    padding: 32px 16px;
+  }
+
+  .mid-video-title {
+    font-size: clamp(18px, 5vw, 28px);
+  }
+
+  .mid-video-sub {
+    font-size: clamp(13px, 2.5vw, 16px);
+    margin-bottom: 18px;
+  }
+
+  .mid-video-btn {
+    padding: 10px 24px;
+    font-size: 14px;
   }
 }

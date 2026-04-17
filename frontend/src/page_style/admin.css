@@ -377,4 +377,34 @@ html {
   .adm-content { padding: 18px 14px 40px; }
   .adm-topbar { padding: 0 16px; }
   .adm-hamburger { display: flex !important; }
+
+  /* Ensure tables can scroll horizontally instead of breaking layout */
+  .adm-table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 2-column stats on tablet */
+  .adm-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .adm-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .adm-stat-card {
+    padding: 14px 16px;
+  }
+
+  .adm-stat-value {
+    font-size: 22px;
+  }
+
+  .adm-topbar-title {
+    font-size: 16px;
+  }
 }

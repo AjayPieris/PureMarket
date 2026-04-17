@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import About from "../components/About";
 import Card from "../components/productCard";
-import HeroVideo from "../assets/Hero.mp4";
+import HeroSlider from "../components/HeroSlider";
 import MidVideo from "../assets/Mid.mp4";
 
 function CountUp({ end, duration = 2000, suffix = "" }) {
@@ -50,36 +50,8 @@ export default function Home() {
       {/* Top Nav */}
       <Navbar />
 
-      {/* Hero */}
-      <section className="hero">
-        <video
-          className="hero-video"
-          src={HeroVideo}
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
-        <div className="hero-overlay" />
-        <div className="hero-content">
-          <h1 className="hero-title hero-anim-title">
-            Discover Amazing <span className="accent">Products</span> Today
-          </h1>
-          <p className="hero-sub hero-anim-sub">
-            Shop from thousands of verified vendors and find exactly what you're
-            looking for
-          </p>
-
-          <div className="hero-ctas hero-anim-ctas">
-            <Link to="/products" className="btn-primary">
-              Browse Products
-            </Link>
-            <Link to="/signup" className="link-plain">
-              Become a Vendor
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Hero Slider */}
+      <HeroSlider />
 
       {/* Centered, big stats */}
       <section className="stats">
