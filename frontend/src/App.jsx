@@ -5,7 +5,7 @@ import './index.css'
 // Pages
 import Home from "./pages/home";
 import Login from "./pages/login";
-import Register from "./pages/Register";
+import Register from "./pages/register";
 import Product from "./pages/product";
 import Cart from "./pages/cart";
 import Vendor from "./pages/vendor";
