@@ -442,7 +442,7 @@ export default function VendorDashboard() {
             >
               <input
                 type="url"
-                placeholder="https://your-store.com or social media link"
+                placeholder="https://your-store.com or Google Drive link"
                 value={storeLinkInput}
                 onChange={(e) => setStoreLinkInput(e.target.value)}
                 className="flex-1 rounded-[1rem] bg-skeuo-bg shadow-skeuo-inner px-5 py-3 text-sm font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:shadow-skeuo transition-all"

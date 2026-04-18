@@ -65,38 +65,37 @@ export default function VendorOrders() {
   const deliveredCount = orders.filter((o) => o.status === "Delivered").length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-20">
+    <div className="min-h-screen flex flex-col bg-skeuo-bg pt-20 font-sans antialiased text-slate-800">
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 pt-24 pb-10 max-w-5xl">
+      <main className="flex-1 container mx-auto px-4 pt-16 pb-10 max-w-5xl">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10 bg-skeuo-bg p-6 sm:p-8 rounded-[2.5rem] shadow-skeuo border border-white/30">
           <div>
             <Link
               to="/vendor"
-              className="text-sm text-purple-600 hover:text-purple-700 font-medium mb-2 inline-flex items-center gap-1"
+              className="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-purple-600 mb-4 inline-flex items-center gap-2 px-6 py-2 rounded-full shadow-skeuo hover:scale-95 active:shadow-skeuo-inner transition-all duration-300"
             >
               ← Back to Dashboard
             </Link>
-            <h1 className="text-2xl font-extrabold text-gray-900">
-              📦 Store Orders
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {orders.length} total order{orders.length !== 1 ? "s" : ""}{" "}
-              &middot;{" "}
-              <span className="text-amber-600 font-semibold">
-                {pendingCount} pending
-              </span>{" "}
-              &middot;{" "}
-              <span className="text-green-600 font-semibold">
-                {deliveredCount} delivered
+            <h1 className="text-3xl font-black text-slate-700 tracking-tight flex items-center gap-3">
+              <span className="w-12 h-12 rounded-full shadow-skeuo-inner flex items-center justify-center text-2xl">
+                📦
               </span>
+              Store Orders
+            </h1>
+            <p className="text-sm font-bold text-slate-500 mt-4 tracking-wide">
+              {orders.length} total order{orders.length !== 1 ? "s" : ""}{" "}
+              <span className="mx-2 text-slate-300">•</span>{" "}
+              <span className="text-amber-500">{pendingCount} pending</span>{" "}
+              <span className="mx-2 text-slate-300">•</span>{" "}
+              <span className="text-green-500">{deliveredCount} delivered</span>
             </p>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-4 mb-10">
           {[
             { key: "all", label: `All (${orders.length})` },
             { key: "Pending", label: `⏳ Pending (${pendingCount})` },
@@ -105,10 +104,10 @@ export default function VendorOrders() {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 ${
                 filter === tab.key
-                  ? "bg-gray-900 text-white shadow-lg"
-                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                  ? "bg-skeuo-bg shadow-skeuo-inner text-purple-600 scale-95"
+                  : "bg-skeuo-bg shadow-skeuo text-slate-500 hover:text-purple-500 hover:scale-105 active:shadow-skeuo-inner active:scale-95"
               }`}
             >
               {tab.label}
@@ -118,28 +117,30 @@ export default function VendorOrders() {
 
         {/* Orders List */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-gray-400">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mr-3"></div>
+          <div className="flex flex-col items-center justify-center py-24 text-slate-500 font-bold tracking-widest uppercase">
+            <div className="w-16 h-16 rounded-full shadow-skeuo flex items-center justify-center mb-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-purple-600"></div>
+            </div>
             Loading orders…
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300 text-3xl">
+          <div className="text-center py-24 px-6 rounded-[3rem] shadow-skeuo-inner bg-skeuo-bg border border-white/20">
+            <div className="w-24 h-24 rounded-full shadow-skeuo flex flex-col items-center justify-center mx-auto mb-8 text-4xl text-slate-400">
               📦
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
+            <h3 className="text-2xl font-black text-slate-700 mb-3">
               {filter === "all"
                 ? "No orders yet"
                 : `No ${filter.toLowerCase()} orders`}
             </h3>
-            <p className="text-gray-500">
+            <p className="text-slate-500 font-bold">
               {filter === "all"
                 ? "When customers buy your products, orders will appear here."
                 : "Try switching to a different filter."}
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {(() => {
               // Group orders by customer
               const grouped = {};
@@ -155,11 +156,11 @@ export default function VendorOrders() {
               return Object.entries(grouped).map(([custId, group]) => (
                 <div
                   key={custId}
-                  className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden"
+                  className="rounded-[2rem] bg-skeuo-bg shadow-skeuo p-6 sm:p-8 border border-white/20"
                 >
                   {/* Customer Header — shown once */}
-                  <div className="flex items-center gap-3 px-6 py-4 bg-gray-50/60 border-b border-gray-100">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  <div className="flex flex-wrap items-center gap-5 pb-6 border-b border-slate-200/50 mb-6">
+                    <div className="w-14 h-14 rounded-full overflow-hidden shadow-skeuo-inner border-2 border-white/40 bg-white flex items-center justify-center text-slate-400 font-black text-lg shrink-0">
                       {group.customer?.profileImage ? (
                         <img
                           src={group.customer.profileImage}
@@ -171,17 +172,17 @@ export default function VendorOrders() {
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">
+                      <p className="font-extrabold text-slate-800 text-lg mb-1">
                         {group.customer?.name || "Unknown Customer"}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs font-bold text-slate-400 tracking-wider">
                         {group.customer?.email}
                       </p>
                     </div>
                   </div>
 
                   {/* All orders from this customer */}
-                  <div className="divide-y divide-gray-100">
+                  <div className="space-y-6">
                     {group.orders.map((order) => {
                       const myItems = (order.orderItems || []).filter((it) => {
                         const v =
@@ -194,15 +195,15 @@ export default function VendorOrders() {
                       return (
                         <div
                           key={order._id}
-                          className="px-6 py-4 hover:bg-gray-50/40 transition-colors"
+                          className="p-6 rounded-[1.5rem] shadow-skeuo-inner bg-skeuo-bg border border-white/20"
                         >
                           {/* Order meta */}
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <span className="text-xs font-mono text-gray-400">
+                          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-200/50">
+                            <div className="flex items-center gap-4">
+                              <span className="text-xs font-black uppercase tracking-widest text-slate-400 bg-skeuo-bg shadow-skeuo px-4 py-2 rounded-full">
                                 #{order._id?.slice(-8).toUpperCase()}
                               </span>
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs font-bold text-slate-500">
                                 {new Date(order.createdAt).toLocaleDateString(
                                   "en-US",
                                   {
@@ -213,12 +214,12 @@ export default function VendorOrders() {
                                 )}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-4">
                               <span
-                                className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                className={`px-5 py-2.5 rounded-full shadow-skeuo-inner text-xs font-black uppercase tracking-widest ${
                                   order.status === "Delivered"
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-amber-100 text-amber-700"
+                                    ? "text-green-500"
+                                    : "text-amber-500"
                                 }`}
                               >
                                 {order.status === "Delivered"
@@ -229,7 +230,7 @@ export default function VendorOrders() {
                                 <button
                                   onClick={() => handleMarkDelivered(order._id)}
                                   disabled={updatingOrderId === order._id}
-                                  className="px-3 py-1 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold shadow hover:scale-[1.03] transition disabled:opacity-60"
+                                  className="px-6 py-2.5 rounded-full shadow-skeuo bg-skeuo-bg text-green-500 text-xs font-black uppercase tracking-widest hover:scale-95 active:shadow-skeuo-inner transition-all duration-300 disabled:opacity-50"
                                 >
                                   {updatingOrderId === order._id
                                     ? "Updating…"
@@ -240,14 +241,14 @@ export default function VendorOrders() {
                           </div>
 
                           {/* Product items */}
-                          <div className="flex flex-wrap gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {myItems.map((item, idx) => {
                               const productImg =
                                 item.product?.images?.[0] || null;
                               return (
                                 <div
                                   key={idx}
-                                  className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2 border border-gray-100"
+                                  className="flex items-center gap-4 bg-skeuo-bg shadow-skeuo rounded-[1.5rem] p-4 hover:shadow-[6px_6px_12px_#c5c5c5,-6px_-6px_12px_#ffffff] transition-all"
                                 >
                                   {productImg ? (
                                     <img
@@ -273,7 +274,10 @@ export default function VendorOrders() {
                                       </span>
                                       &nbsp;&middot;&nbsp;
                                       <span className="font-bold text-gray-800">
-                                        LKR {Number(item.price * item.qty).toFixed(2)}
+                                        LKR{" "}
+                                        {Number(item.price * item.qty).toFixed(
+                                          2,
+                                        )}
                                       </span>
                                     </p>
                                   </div>
