@@ -4,25 +4,47 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "../page_style/admin.css";
 import logo from "../assets/logo.png";
+import {
+  LayoutDashboard,
+  Clock,
+  Store,
+  Users,
+  Home,
+  LogOut,
+  Menu,
+  Users2,
+  Package,
+  DollarSign,
+  CheckCircle2,
+  XCircle,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldOff,
+  UserX,
+  UserCheck,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
-/* ─── Sidebar Nav Items ─── */
 const NAV_ITEMS = [
-  { id: "overview",   icon: "📊", label: "Overview" },
-  { id: "approvals",  icon: "⏳", label: "Approvals",  badge: true },
-  { id: "vendors",    icon: "🏪", label: "Shops / Vendors" },
-  { id: "users",      icon: "👥", label: "Users" },
+  { id: "overview",  icon: LayoutDashboard, label: "Overview" },
+  { id: "approvals", icon: Clock,           label: "Approvals",      badge: true },
+  { id: "vendors",   icon: Store,           label: "Shops / Vendors" },
+  { id: "users",     icon: Users,           label: "Users" },
 ];
 
-/* ─── Mini Spinner ─── */
-function Spin() { return <span className="adm-spinner" />; }
+function Spin() {
+  return <Loader2 className="adm-spinner-icon" size={14} />;
+}
 
-/* ─── Stat Card ─── */
-function StatCard({ icon, label, value, sub }) {
+function StatCard({ icon: Icon, label, value, sub, color }) {
   return (
     <div className="adm-stat-card">
-      <div className="adm-stat-icon">{icon}</div>
+      <div className="adm-stat-icon-wrap" style={{ "--card-accent": color }}>
+        <Icon size={22} strokeWidth={1.8} />
+      </div>
       <div className="adm-stat-label">{label}</div>
       <div className="adm-stat-value">{value}</div>
       {sub && <div className="adm-stat-sub">{sub}</div>}
@@ -38,28 +60,23 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab]     = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  /* ─── Stats ─── */
-  const [stats, setStats]           = useState(null);
+  const [stats, setStats]               = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  /* ─── Pending vendors ─── */
-  const [pending, setPending]           = useState([]);
+  const [pending, setPending]               = useState([]);
   const [vendorsLoading, setVendorsLoading] = useState(true);
-  const [rowAction, setRowAction]       = useState({});
+  const [rowAction, setRowAction]           = useState({});
 
-  /* ─── All users ─── */
   const [users, setUsers]               = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersFetched, setUsersFetched] = useState(false);
   const [blockingId, setBlockingId]     = useState(null);
 
-  /* ─── All vendors ─── */
   const [allVendors, setAllVendors]                 = useState([]);
   const [allVendorsLoading, setAllVendorsLoading]   = useState(false);
   const [allVendorsFetched, setAllVendorsFetched]   = useState(false);
   const [blockingVendorId, setBlockingVendorId]     = useState(null);
 
-  /* ─── Boot fetch ─── */
   useEffect(() => {
     if (!token) return;
     axios.get(`${API_BASE}/api/admin/stats`, { headers })
@@ -70,7 +87,6 @@ export default function AdminDashboard() {
       .finally(() => setVendorsLoading(false));
   }, [token]);
 
-  /* ─── Lazy-load when tab opens ─── */
   useEffect(() => {
     if (activeTab === "users" && !usersFetched) {
       setUsersLoading(true);
@@ -88,7 +104,6 @@ export default function AdminDashboard() {
     }
   }, [activeTab]);
 
-  /* ─── Block toggle user ─── */
   async function handleToggleBlock(u) {
     setBlockingId(u._id);
     try {
@@ -97,7 +112,6 @@ export default function AdminDashboard() {
     } finally { setBlockingId(null); }
   }
 
-  /* ─── Block toggle vendor ─── */
   async function handleToggleVendorBlock(v) {
     setBlockingVendorId(v._id);
     try {
@@ -106,7 +120,6 @@ export default function AdminDashboard() {
     } finally { setBlockingVendorId(null); }
   }
 
-  /* ─── Approve / Reject ─── */
   const handleApprove = useCallback(async (vendor) => {
     setRowAction(s => ({ ...s, [vendor._id]: "approve" }));
     try {
@@ -124,50 +137,49 @@ export default function AdminDashboard() {
   }, [token]);
 
   const initials = (user?.name || "A").charAt(0).toUpperCase();
-
-  /* ─── PAGE TITLES ─── */
   const PAGE_TITLE = { overview: "Overview", approvals: "Vendor Approvals", vendors: "Shops & Vendors", users: "All Users" };
 
-  /* ═══════════════════════ RENDER ═══════════════════════ */
   return (
     <div className="adm-shell">
 
       {/* ── Sidebar ── */}
       <aside className={`adm-sidebar${sidebarOpen ? " open" : ""}`}>
-        {/* Brand */}
         <div className="adm-sidebar-brand">
           <img src={logo} alt="PureMarket" />
           <span className="adm-sidebar-brand-text">PureMarket</span>
           <span className="adm-sidebar-badge">Admin</span>
         </div>
 
-        {/* Nav */}
         <nav className="adm-nav">
           <div className="adm-nav-section-label">Main Menu</div>
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.id}
-              className={`adm-nav-item${activeTab === item.id ? " active" : ""}`}
-              onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-            >
-              <span className="adm-nav-icon">{item.icon}</span>
-              {item.label}
-              {item.badge && pending.length > 0 && (
-                <span className="adm-nav-badge">{pending.length}</span>
-              )}
-            </button>
-          ))}
+          {NAV_ITEMS.map(item => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                className={`adm-nav-item${activeTab === item.id ? " active" : ""}`}
+                onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+              >
+                <span className="adm-nav-icon"><Icon size={18} strokeWidth={1.8} /></span>
+                {item.label}
+                {item.badge && pending.length > 0 && (
+                  <span className="adm-nav-badge">{pending.length}</span>
+                )}
+              </button>
+            );
+          })}
 
           <div className="adm-nav-section-label" style={{ marginTop: 12 }}>Quick Links</div>
           <button className="adm-nav-item" onClick={() => navigate("/")}>
-            <span className="adm-nav-icon">🏠</span> Back to Site
+            <span className="adm-nav-icon"><Home size={18} strokeWidth={1.8} /></span>
+            Back to Site
           </button>
         </nav>
 
-        {/* Footer: logout */}
         <div className="adm-sidebar-footer">
           <button className="adm-nav-item" onClick={() => { logout(); navigate("/signin"); }}>
-            <span className="adm-nav-icon">🚪</span> Sign Out
+            <span className="adm-nav-icon"><LogOut size={18} strokeWidth={1.8} /></span>
+            Sign Out
           </button>
         </div>
       </aside>
@@ -177,21 +189,20 @@ export default function AdminDashboard() {
 
         {/* Topbar */}
         <div className="adm-topbar">
-          {/* Mobile hamburger */}
           <button
             onClick={() => setSidebarOpen(o => !o)}
             className="adm-hamburger"
             aria-label="Toggle sidebar"
-          >☰</button>
+          >
+            <Menu size={22} />
+          </button>
 
           <span className="adm-topbar-title">{PAGE_TITLE[activeTab]}</span>
           <div className="adm-topbar-right">
-            {/* Admin info */}
             <div style={{ textAlign: "right", marginRight: 10, display: "flex", flexDirection: "column", justifyContent: "center" }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#1e1348", lineHeight: 1.2 }}>{user?.name || "Admin"}</span>
               <span style={{ fontSize: 11, color: "#8a93b0" }}>{user?.email || ""}</span>
             </div>
-            {/* Avatar */}
             <div className="adm-avatar" title={user?.name || "Admin"} style={{ flexShrink: 0 }}>
               {user?.profileImage ? (
                 <img src={user.profileImage} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
@@ -208,93 +219,56 @@ export default function AdminDashboard() {
           {/* ══ OVERVIEW ══ */}
           {activeTab === "overview" && (
             <>
-              {/* ── Admin Profile Card ── */}
-              <div style={{
-                background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #4f46e5 100%)",
-                borderRadius: 20,
-                padding: "24px 28px",
-                marginBottom: 24,
-                display: "flex",
-                alignItems: "center",
-                gap: 20,
-                boxShadow: "0 8px 32px rgba(109,40,217,0.3)",
-                position: "relative",
-                overflow: "hidden",
-              }}>
-                {/* Background glow */}
-                <div style={{ position:"absolute", top:-40, right:-40, width:160, height:160, borderRadius:"50%", background:"rgba(255,255,255,0.07)", pointerEvents:"none" }} />
-                <div style={{ position:"absolute", bottom:-30, left:120, width:100, height:100, borderRadius:"50%", background:"rgba(255,255,255,0.05)", pointerEvents:"none" }} />
-
-                {/* Avatar */}
-                <div style={{
-                  width: 72, height: 72, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.2)",
-                  border: "3px solid rgba(255,255,255,0.5)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0, overflow: "hidden",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-                }}>
+              {/* Admin Profile Card */}
+              <div className="adm-profile-card">
+                <div className="adm-profile-glow adm-profile-glow-1" />
+                <div className="adm-profile-glow adm-profile-glow-2" />
+                <div className="adm-profile-avatar">
                   {user?.profileImage ? (
-                    <img src={user.profileImage} alt={user.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                    <img src={user.profileImage} alt={user.name} />
                   ) : (
-                    <span style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>
-                      {(user?.name || "A").charAt(0).toUpperCase()}
-                    </span>
+                    <span>{(user?.name || "A").charAt(0).toUpperCase()}</span>
                   )}
                 </div>
-
-                {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.65)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>
-                    Administrator
-                  </div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px", marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {user?.name || "Admin"}
-                  </div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", display: "flex", alignItems: "center", gap: 6 }}>
-                    <span>✉</span>
-                    <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.email || "—"}</span>
+                  <div className="adm-profile-role">Administrator</div>
+                  <div className="adm-profile-name">{user?.name || "Admin"}</div>
+                  <div className="adm-profile-email">
+                    <ShieldCheck size={13} />
+                    <span>{user?.email || "—"}</span>
                   </div>
                 </div>
-
-                {/* Badge */}
-                <div style={{
-                  background: "rgba(255,255,255,0.18)",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  borderRadius: 999, padding: "6px 16px",
-                  fontSize: 12, fontWeight: 700, color: "#fff",
-                  letterSpacing: "0.05em", flexShrink: 0,
-                }}>
-                  🛡 Admin
+                <div className="adm-profile-badge">
+                  <ShieldAlert size={14} />
+                  Admin
                 </div>
               </div>
 
-              {/* ── Stats ── */}
+              {/* Stats */}
               <div className="adm-stats-grid">
-                <StatCard icon="👥" label="Total Users"    value={statsLoading ? "…" : (stats?.totalUsers ?? 0).toLocaleString()}    sub="Registered customers" />
-                <StatCard icon="🏪" label="Total Vendors"  value={statsLoading ? "…" : (stats?.totalVendors ?? 0).toLocaleString()}  sub="Active shops" />
-                <StatCard icon="📦" label="Total Products" value={statsLoading ? "…" : (stats?.totalProducts ?? 0).toLocaleString()} sub="Listed items" />
-                <StatCard icon="💰" label="Platform Revenue" value={statsLoading ? "…" : `LKR ${Number(stats?.platformRevenue ?? 0).toFixed(2)}`} sub="All-time earnings" />
+                <StatCard icon={Users2}    label="Total Users"       value={statsLoading ? "…" : (stats?.totalUsers ?? 0).toLocaleString()}    sub="Registered customers" color="#6d28d9" />
+                <StatCard icon={Store}     label="Total Vendors"     value={statsLoading ? "…" : (stats?.totalVendors ?? 0).toLocaleString()}  sub="Active shops"         color="#0891b2" />
+                <StatCard icon={Package}   label="Total Products"    value={statsLoading ? "…" : (stats?.totalProducts ?? 0).toLocaleString()} sub="Listed items"         color="#059669" />
+                <StatCard icon={DollarSign} label="Platform Revenue" value={statsLoading ? "…" : `LKR ${Number(stats?.platformRevenue ?? 0).toFixed(2)}`} sub="All-time earnings" color="#d97706" />
               </div>
 
               {/* Quick access */}
               <h2 className="adm-section-title">Quick Access</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14 }}>
+              <div className="adm-quick-grid">
                 {[
-                  { id: "approvals", icon: "⏳", label: "Pending Approvals", count: pending.length, color: "#fef3c7", accent: "#d97706" },
-                  { id: "vendors",   icon: "🏪", label: "Manage Shops",      count: statsLoading ? "…" : (stats?.totalVendors ?? 0), color: "#ede9fe", accent: "#6d28d9" },
-                  { id: "users",     icon: "👥", label: "Manage Users",      count: statsLoading ? "…" : (stats?.totalUsers ?? 0),   color: "#dbeafe", accent: "#2563eb" },
-                ].map(q => (
-                  <button key={q.id} onClick={() => setActiveTab(q.id)}
-                    style={{ background: q.color, border: "none", borderRadius: 14, padding: "18px 20px", cursor: "pointer", textAlign: "left", transition: "transform 0.15s, box-shadow 0.15s", fontFamily: "Outfit,sans-serif" }}
-                    onMouseEnter={e => { e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow=`0 8px 22px ${q.color}`; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform=""; e.currentTarget.style.boxShadow=""; }}
-                  >
-                    <div style={{ fontSize: 24, marginBottom: 6 }}>{q.icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: q.accent }}>{q.label}</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: q.accent, lineHeight: 1.2 }}>{q.count}</div>
-                  </button>
-                ))}
+                  { id: "approvals", icon: Clock,   label: "Pending Approvals", count: pending.length,                                       color: "#d97706", bg: "#fffbeb" },
+                  { id: "vendors",   icon: Store,   label: "Manage Shops",      count: statsLoading ? "…" : (stats?.totalVendors ?? 0),       color: "#6d28d9", bg: "#f5f3ff" },
+                  { id: "users",     icon: Users,   label: "Manage Users",      count: statsLoading ? "…" : (stats?.totalUsers ?? 0),          color: "#2563eb", bg: "#eff6ff" },
+                ].map(q => {
+                  const Icon = q.icon;
+                  return (
+                    <button key={q.id} onClick={() => setActiveTab(q.id)} className="adm-quick-card" style={{ "--qc-color": q.color, "--qc-bg": q.bg }}>
+                      <div className="adm-quick-icon"><Icon size={20} strokeWidth={1.8} /></div>
+                      <div className="adm-quick-label">{q.label}</div>
+                      <div className="adm-quick-count">{q.count}</div>
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}
@@ -315,9 +289,9 @@ export default function AdminDashboard() {
                   </thead>
                   <tbody>
                     {vendorsLoading ? (
-                      <tr><td colSpan={5} className="adm-empty"><Spin /> Loading…</td></tr>
+                      <tr><td colSpan={5} className="adm-empty"><Loader2 size={16} className="adm-spinner-icon" /> Loading…</td></tr>
                     ) : pending.length === 0 ? (
-                      <tr><td colSpan={5} className="adm-empty">🎉 No pending approvals</td></tr>
+                      <tr><td colSpan={5} className="adm-empty"><AlertCircle size={16} style={{ display:"inline", marginRight:6, verticalAlign:"middle" }} />No pending approvals</td></tr>
                     ) : pending.map(v => {
                       const isApproving = rowAction[v._id] === "approve";
                       const isRejecting = rowAction[v._id] === "reject";
@@ -338,10 +312,10 @@ export default function AdminDashboard() {
                           <td>
                             <div style={{ display: "flex", gap: 8 }}>
                               <button className="adm-btn adm-btn-primary" onClick={() => handleApprove(v)} disabled={busy}>
-                                {isApproving ? <Spin /> : "✓ Approve"}
+                                {isApproving ? <Spin /> : <><CheckCircle2 size={13} /> Approve</>}
                               </button>
                               <button className="adm-btn adm-btn-danger" onClick={() => handleReject(v)} disabled={busy}>
-                                {isRejecting ? <Spin /> : "✕ Reject"}
+                                {isRejecting ? <Spin /> : <><XCircle size={13} /> Reject</>}
                               </button>
                             </div>
                           </td>
@@ -370,22 +344,16 @@ export default function AdminDashboard() {
                   </thead>
                   <tbody>
                     {allVendorsLoading ? (
-                      <tr><td colSpan={6} className="adm-empty"><Spin /> Loading vendors…</td></tr>
+                      <tr><td colSpan={6} className="adm-empty"><Loader2 size={16} className="adm-spinner-icon" /> Loading vendors…</td></tr>
                     ) : allVendors.length === 0 ? (
                       <tr><td colSpan={6} className="adm-empty">No vendors found.</td></tr>
                     ) : allVendors.map(v => (
                       <tr key={v._id}>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <div style={{
-                              width: 36, height: 36, borderRadius: "50%",
-                              background: "linear-gradient(135deg,#ede9fe,#c4b5fd)",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              flexShrink: 0, overflow: "hidden", fontSize: 14, fontWeight: 700, color: "#6d28d9",
-                              border: "2px solid #ede9fe",
-                            }}>
+                            <div className="adm-table-avatar" style={{ background: "linear-gradient(135deg,#ede9fe,#c4b5fd)", color: "#6d28d9" }}>
                               {v.profileImage
-                                ? <img src={v.profileImage} alt={v.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                                ? <img src={v.profileImage} alt={v.name} />
                                 : (v.name || "V").charAt(0).toUpperCase()
                               }
                             </div>
@@ -402,7 +370,12 @@ export default function AdminDashboard() {
                         <td style={{ textAlign: "center", fontWeight: 700, color: "#6d28d9" }}>{v.totalProducts ?? 0}</td>
                         <td>
                           <span className={`adm-badge ${!v.isApproved ? "adm-badge-amber" : v.isBlocked ? "adm-badge-red" : "adm-badge-green"}`}>
-                            {!v.isApproved ? "Pending" : v.isBlocked ? "Blocked" : "Active"}
+                            {!v.isApproved
+                              ? <><Clock size={10} /> Pending</>
+                              : v.isBlocked
+                              ? <><ShieldOff size={10} /> Blocked</>
+                              : <><ShieldCheck size={10} /> Active</>
+                            }
                           </span>
                         </td>
                         <td>
@@ -411,7 +384,12 @@ export default function AdminDashboard() {
                             onClick={() => handleToggleVendorBlock(v)}
                             disabled={blockingVendorId === v._id}
                           >
-                            {blockingVendorId === v._id ? <Spin /> : v.isBlocked ? "Unblock" : "Block"}
+                            {blockingVendorId === v._id
+                              ? <Spin />
+                              : v.isBlocked
+                              ? <><UserCheck size={13} /> Unblock</>
+                              : <><UserX size={13} /> Block</>
+                            }
                           </button>
                         </td>
                       </tr>
@@ -438,22 +416,16 @@ export default function AdminDashboard() {
                   </thead>
                   <tbody>
                     {usersLoading ? (
-                      <tr><td colSpan={5} className="adm-empty"><Spin /> Loading users…</td></tr>
+                      <tr><td colSpan={5} className="adm-empty"><Loader2 size={16} className="adm-spinner-icon" /> Loading users…</td></tr>
                     ) : users.length === 0 ? (
                       <tr><td colSpan={5} className="adm-empty">No users found.</td></tr>
                     ) : users.map(u => (
                       <tr key={u._id}>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <div style={{
-                              width: 36, height: 36, borderRadius: "50%",
-                              background: "linear-gradient(135deg,#dbeafe,#93c5fd)",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              flexShrink: 0, overflow: "hidden", fontSize: 14, fontWeight: 700, color: "#2563eb",
-                              border: "2px solid #dbeafe",
-                            }}>
+                            <div className="adm-table-avatar" style={{ background: "linear-gradient(135deg,#dbeafe,#93c5fd)", color: "#2563eb" }}>
                               {u.profileImage
-                                ? <img src={u.profileImage} alt={u.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                                ? <img src={u.profileImage} alt={u.name} />
                                 : (u.name || "U").charAt(0).toUpperCase()
                               }
                             </div>
@@ -464,7 +436,10 @@ export default function AdminDashboard() {
                         <td style={{ textAlign: "center", fontWeight: 700, color: "#6d28d9" }}>{u.totalOrders ?? 0}</td>
                         <td>
                           <span className={`adm-badge ${u.isBlocked ? "adm-badge-red" : "adm-badge-green"}`}>
-                            {u.isBlocked ? "Blocked" : "Active"}
+                            {u.isBlocked
+                              ? <><ShieldOff size={10} /> Blocked</>
+                              : <><ShieldCheck size={10} /> Active</>
+                            }
                           </span>
                         </td>
                         <td>
@@ -473,7 +448,12 @@ export default function AdminDashboard() {
                             onClick={() => handleToggleBlock(u)}
                             disabled={blockingId === u._id}
                           >
-                            {blockingId === u._id ? <Spin /> : u.isBlocked ? "Unblock" : "Block"}
+                            {blockingId === u._id
+                              ? <Spin />
+                              : u.isBlocked
+                              ? <><UserCheck size={13} /> Unblock</>
+                              : <><UserX size={13} /> Block</>
+                            }
                           </button>
                         </td>
                       </tr>

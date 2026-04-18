@@ -5,6 +5,15 @@ import { uploadFiles } from "../utils/uploadthing";
 import "../page_style/auth.css";
 import { toast } from "react-toastify";
 import logo from "../assets/logo.png";
+import {
+  ArrowRight,
+  UserRound,
+  Mail,
+  Lock,
+  ChevronDown,
+  Camera,
+  Plus,
+} from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
@@ -102,12 +111,12 @@ export default function Register() {
                     ) : uploading ? (
                       <span className="auth-spinner" />
                     ) : (
-                      <span className="material-symbols-outlined" style={{ fontSize: 36, color: "rgba(211,187,255,0.45)" }}>person_add</span>
+                      <Camera size={32} strokeWidth={1.4} style={{ color: "rgba(211,187,255,0.45)" }} />
                     )}
                   </div>
                 </div>
                 <div className="auth-avatar-badge">
-                  <span className="material-symbols-outlined" style={{ fontSize: 14 }}>add</span>
+                  <Plus size={14} strokeWidth={2.5} />
                 </div>
               </button>
               <p className="auth-avatar-hint">
@@ -126,36 +135,43 @@ export default function Register() {
 
             {/* Form */}
             <form className="auth-form" onSubmit={handleSubmit}>
+
               {/* Full Name */}
               <div className="auth-field-group">
                 <label className="auth-label" htmlFor="reg-name">Full Name</label>
-                <input
-                  id="reg-name"
-                  name="name"
-                  type="text"
-                  placeholder="Julian Vane"
-                  value={form.name}
-                  onChange={handleChange}
-                  className="auth-input"
-                  autoComplete="name"
-                  required
-                />
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><UserRound size={16} strokeWidth={1.8} /></span>
+                  <input
+                    id="reg-name"
+                    name="name"
+                    type="text"
+                    placeholder="Your Full Name"
+                    value={form.name}
+                    onChange={handleChange}
+                    className="auth-input auth-input-padded"
+                    autoComplete="name"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Email */}
               <div className="auth-field-group">
                 <label className="auth-label" htmlFor="reg-email">Email Address</label>
-                <input
-                  id="reg-email"
-                  name="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  className="auth-input"
-                  autoComplete="email"
-                  required
-                />
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Mail size={16} strokeWidth={1.8} /></span>
+                  <input
+                    id="reg-email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="auth-input auth-input-padded"
+                    autoComplete="email"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Role */}
@@ -174,7 +190,7 @@ export default function Register() {
                     <option value="Vendor">Vendor</option>
                   </select>
                   <div className="auth-select-caret">
-                    <span className="material-symbols-outlined">expand_more</span>
+                    <ChevronDown size={18} strokeWidth={2} />
                   </div>
                 </div>
               </div>
@@ -182,17 +198,20 @@ export default function Register() {
               {/* Password */}
               <div className="auth-field-group">
                 <label className="auth-label" htmlFor="reg-password">Secure Password</label>
-                <input
-                  id="reg-password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={form.password}
-                  onChange={handleChange}
-                  className="auth-input"
-                  autoComplete="new-password"
-                  required
-                />
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Lock size={16} strokeWidth={1.8} /></span>
+                  <input
+                    id="reg-password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={form.password}
+                    onChange={handleChange}
+                    className="auth-input auth-input-padded"
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Submit */}
@@ -202,7 +221,7 @@ export default function Register() {
                 ) : (
                   <>
                     <span>Create Exclusive Account</span>
-                    <span className="material-symbols-outlined auth-btn-arrow">arrow_forward</span>
+                    <ArrowRight size={20} strokeWidth={2} className="auth-btn-arrow" />
                   </>
                 )}
               </button>
@@ -224,12 +243,6 @@ export default function Register() {
           <a href="#">Boutique Policy</a>
         </div>
       </footer>
-
-      {/* Material Symbols */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-      />
     </div>
   );
 }

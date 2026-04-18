@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import logo from "../assets/logo.png";
+import { ArrowRight, ArrowLeft, Mail, Lock } from "lucide-react";
 
 const BG_IMAGE =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDydt4uI7y7lr1W8idxf8IGYG6BEb0PCSUHWMwUqvXSF3bIVXzmwHeC3utzXQS4ksKJZVSTKELKBdV1icHxUTEfyjU4pxMrygMZEPzZmK7lnTD_aNEJ2i0ftCdYMHR_WFKsA7P_6z5M5W0y7QkP3SfTGUvxEIf9j1TYHq7X6TeSOBAONlF8kiuIy7pJNyt4CGQs45pI5CnBh8rTyALMidlS8SuwEEnWW_JQx2S3HMpFJ9IDN0J34_OkZ8Wb0iFxW7Y8pdSTHAerEbI";
@@ -39,8 +40,8 @@ export default function Login() {
       const role = (user?.role || "").toLowerCase();
       login({ token, user, role });
       switch (role) {
-        case "admin":  navigate("/admin", { replace: true }); break;
-        case "vendor": navigate("/vendor", { replace: true }); break;
+        case "admin":  navigate("/admin",     { replace: true }); break;
+        case "vendor": navigate("/vendor",    { replace: true }); break;
         default:       navigate("/dashboard", { replace: true });
       }
     } catch (err) {
@@ -77,33 +78,39 @@ export default function Login() {
               {/* Email */}
               <div className="auth-field-group">
                 <label className="auth-label" htmlFor="lp-email">Email Address</label>
-                <input
-                  id="lp-email"
-                  name="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  className="auth-input"
-                  autoComplete="email"
-                  required
-                />
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Mail size={16} strokeWidth={1.8} /></span>
+                  <input
+                    id="lp-email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="auth-input auth-input-padded"
+                    autoComplete="email"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Password */}
               <div className="auth-field-group">
                 <label className="auth-label" htmlFor="lp-password">Secure Password</label>
-                <input
-                  id="lp-password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={form.password}
-                  onChange={handleChange}
-                  className="auth-input"
-                  autoComplete="current-password"
-                  required
-                />
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Lock size={16} strokeWidth={1.8} /></span>
+                  <input
+                    id="lp-password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={form.password}
+                    onChange={handleChange}
+                    className="auth-input auth-input-padded"
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Forgot */}
@@ -116,7 +123,7 @@ export default function Login() {
                 ) : (
                   <>
                     <span>Sign In</span>
-                    <span className="material-symbols-outlined auth-btn-arrow">arrow_forward</span>
+                    <ArrowRight size={20} strokeWidth={2} className="auth-btn-arrow" />
                   </>
                 )}
               </button>
@@ -129,7 +136,7 @@ export default function Login() {
           </div>
 
           <a className="auth-back" href="/">
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
+            <ArrowLeft size={16} strokeWidth={2} />
             Back to Home
           </a>
         </div>
@@ -143,12 +150,6 @@ export default function Login() {
           <a href="#">Policy</a>
         </div>
       </footer>
-
-      {/* Material Symbols */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-      />
     </div>
   );
 }

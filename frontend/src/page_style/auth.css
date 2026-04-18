@@ -230,6 +230,22 @@
   padding-left: 2px;
 }
 
+/* Input icon wrapper */
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.auth-input-icon {
+  position: absolute;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  color: rgba(204,195,215,0.5);
+  pointer-events: none;
+  z-index: 1;
+}
+
 .auth-input,
 .auth-select {
   width: 100%;
@@ -245,6 +261,8 @@
   -webkit-appearance: none;
   appearance: none;
 }
+/* Padded variant when icon is present */
+.auth-input-padded { padding-left: 42px; }
 .auth-input::placeholder { color: rgba(204,195,215,0.38); }
 .auth-input:focus,
 .auth-select:focus {
@@ -308,7 +326,7 @@
 .auth-btn:active:not(:disabled) { transform: scale(0.98); }
 .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .auth-btn-arrow {
-  font-size: 20px;
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 .auth-btn:hover .auth-btn-arrow { transform: translateX(4px); }
