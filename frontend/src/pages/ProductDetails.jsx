@@ -244,11 +244,11 @@ export default function ProductDetails() {
               </span>
             </div>
             
-            <div className="flex items-end gap-4 mb-6">
-              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+            <div className="flex flex-wrap items-end gap-3 mb-6">
+              <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
                 LKR {Number(product.price).toFixed(2)}
               </div>
-              <div className={`text-sm font-semibold mb-1.5 px-3 py-1 rounded-full ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              <div className={`text-sm font-semibold px-3 py-1 rounded-full ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 {product.stock > 0 ? `✓ ${product.stock} in stock` : "✕ Out of stock"}
               </div>
             </div>
@@ -279,49 +279,46 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
+              {/* Add to Cart */}
               <button
                 onClick={() => {
-                  if (isOwner) {
-                    toast.error("You cannot buy your own product!");
-                    return;
-                  }
-                  // Add the total quantity to cart (or multiple increments depending on logic)
-                  for(let i=0; i < orderQuantity; i++) {
-                     addToCart(product);
-                  }
-                  toast.success(`${orderQuantity} x ${product.name} added to cart!`);
+                  if (isOwner) { toast.error("You cannot buy your own product!"); return; }
+                  for (let i = 0; i < orderQuantity; i++) addToCart(product);
+                  toast.success(`${orderQuantity} × ${product.name} added to cart!`);
                 }}
                 disabled={product.stock === 0 || isOwner}
-                className="flex-[1] h-14 px-6 bg-white border-2 border-purple-600 text-purple-700 text-lg font-bold rounded-xl hover:bg-purple-50 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-white flex items-center justify-center gap-2 whitespace-nowrap"
+                title="Add to Cart"
+                className="flex-1 min-w-0 h-12 px-3 sm:px-6 bg-white border-2 border-purple-600 text-purple-700 font-bold rounded-xl hover:bg-purple-50 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-white flex items-center justify-center gap-2"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
                   <circle cx="9" cy="21" r="1"></circle>
                   <circle cx="20" cy="21" r="1"></circle>
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
-                <span>Add to Cart</span>
+                {/* Text hidden on mobile, visible on sm+ */}
+                <span className="hidden sm:inline text-base">Add to Cart</span>
               </button>
 
+              {/* Order Now */}
               <button
                 onClick={() => {
-                  if (isOwner) {
-                    toast.error("You cannot buy your own product!");
-                    return;
-                  }
+                  if (isOwner) { toast.error("You cannot buy your own product!"); return; }
                   handleBuyNow();
                 }}
                 disabled={product.stock === 0 || buying || isOwner}
-                className="flex-[1] h-14 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-lg font-bold rounded-xl shadow-[0_10px_20px_-10px_rgba(124,58,237,0.5)] hover:shadow-[0_10px_20px_-5px_rgba(124,58,237,0.6)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2 whitespace-nowrap"
+                title="Order Now"
+                className="flex-1 min-w-0 h-12 px-3 sm:px-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl shadow-[0_10px_20px_-10px_rgba(124,58,237,0.5)] hover:shadow-[0_10px_20px_-5px_rgba(124,58,237,0.6)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
               >
                 {buying ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white flex-shrink-0"></div>
                 ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
                 )}
-                {buying ? "Ordering..." : "Order Now"}
+                {/* Text hidden on mobile, visible on sm+ */}
+                <span className="hidden sm:inline text-base">{buying ? "Ordering..." : "Order Now"}</span>
               </button>
             </div>
           </div>
